@@ -3,4 +3,5 @@ rootProject.name = 'bankapp'
 include 'front'
 include 'account'
 include 'eurekaServer'
+include 'configServer'
 

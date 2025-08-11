@@ -1,0 +1,12 @@
+server:
+  port: 1012
+
+spring:
+  application:
+    name: configServer
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/SkorpizZzZ/bank-config
+          refreshRate: 10
