@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+    <changeSet id="create-account-table" author="ilgiznigmatullin (generated)">
+        <preConditions>
+            <and>
+                <not>
+                    <tableExists tableName="accounts" schemaName="${schemaName}"/>
+                </not>
+            </and>
+        </preConditions>
+        <createTable tableName="accounts" schemaName="${schemaName}">
+            <column name="account_id" type="bigserial">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="currency" type="varchar(3)" defaultValue="RUB">
+                <constraints nullable ="false" unique="true"/>
+            </column>
+            <column name="balance" type="numeric(19,2)" defaultValue="0.00">
+                <constraints nullable ="false"/>
+            </column>
+            <column name="user_id" type="bigint">
+                <constraints
+                        deleteCascade="true"
+                        foreignKeyName="fk_account_user"
+                        referencedColumnNames="user_id"
+                        referencedTableName="users"
+                        referencedTableSchemaName="${schemaName}"
+                        unique="false"
+                        nullable ="false"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable tableName="accounts" schemaName="${schemaName}"/>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

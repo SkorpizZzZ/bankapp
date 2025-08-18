@@ -1,4 +1,4 @@
-package org.example.front.controller.validator;
+package org.company.account.controller.validator;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;

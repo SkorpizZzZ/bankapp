@@ -1,5 +1,6 @@
 package org.example.front.exception;
 
+import org.example.front.controller.LoginController;
 import org.example.front.dto.CreateUserDto;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -9,8 +10,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
-@ControllerAdvice
-public class GlobalExceptionHandler {
+@ControllerAdvice(assignableTypes = LoginController.class)
+public class LoginExceptionHandler {
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public String handleMethodArgumentNotValidException(
             MethodArgumentNotValidException exception,

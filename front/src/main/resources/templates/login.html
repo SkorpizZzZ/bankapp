@@ -5,6 +5,7 @@
     <title>Login</title>
 </head>
 <body>
+<p style="color:red;" th:if="${error != null}" th:text="${error}"/>
 <form action="/login" method="post">
     <label for="username">Username:
         <input id="username" type="text" name="username">
