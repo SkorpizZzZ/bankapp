@@ -1,12 +1,20 @@
 package org.company.account.mapper;
 
 import org.company.account.domain.User;
-import org.company.account.dto.UserDto;
+import org.company.account.dto.*;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring")
+import java.util.List;
+
+@Mapper(componentModel = "spring", uses = AccountMapper.class)
 public interface UserMapper {
-    UserDto entityToUserDto(User user);
 
-    User userDtoToEntity(UserDto dto);
+    EditUserAccountDto entityToEditUserAccountDto(User user);
+    UpdatePasswordDto entityToUpdatePasswordDto(User user);
+    User createUserDtoToEntity(CreateUserDto dto);
+    CreateUserDto entityToCreateUserDto(User dto);
+
+    @Mapping(target = "accounts", source = "accounts")
+    UserDto entityToUserDto(User user, List<AccountDto> accounts);
 }

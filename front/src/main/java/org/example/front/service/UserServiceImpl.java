@@ -2,11 +2,12 @@ package org.example.front.service;
 
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.front.dto.CreateUserDto;
 import org.example.front.dto.EditUserAccountDto;
 import org.example.front.dto.UpdatePasswordDto;
 import org.example.front.dto.UserDto;
-import org.example.front.feign.FeignAccount;
+import org.example.front.feign.AccountFeign;
 import org.example.front.mapper.UserMapper;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -14,11 +15,12 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserDetailsService, UserService {
 
-    private final FeignAccount feignAccount;
+    private final AccountFeign accountFeign;
     private final UserMapper mapper;
     private final PasswordEncoder passwordEncoder;
 
@@ -27,7 +29,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         UserDto user;
         try {
-             user = feignAccount.findUserByLogin(username);
+             user = accountFeign.findUserByLogin(username);
         } catch (FeignException.FeignClientException e) {
             throw new UsernameNotFoundException(e.getMessage());
         }
@@ -35,17 +37,20 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     }
 
     @Override
-    public UserDto createUser(CreateUserDto user) {
-        return feignAccount.createUser(mapper.createUserDtoToUserDto(user, passwordEncoder));
+    public CreateUserDto createUser(CreateUserDto user) {
+        log.info("Процесс добавления пользователя {}", user);
+        return accountFeign.createUser(mapper.encodePassAndReturn(user, passwordEncoder));
     }
 
     @Override
-    public UserDto updatePassword(String login, UpdatePasswordDto user) {
-        return feignAccount.updatePassword(mapper.updatePasswordDtoToUserDto(login, user, passwordEncoder));
+    public UpdatePasswordDto updatePassword(String login, UpdatePasswordDto user) {
+        log.info("Процесс обновления пароля для пользователя {}", login);
+        return accountFeign.updatePassword(new UpdatePasswordDto(login, passwordEncoder.encode(user.password()), user.confirmPassword()));
     }
 
     @Override
-    public UserDto updateUserAccounts(String login, EditUserAccountDto dto) {
-        return feignAccount.updateUserAccounts(mapper.editUserAccountDtoToUserDto(login, dto));
+    public EditUserAccountDto updateUserAccounts(String login, EditUserAccountDto dto) {
+        log.info("Процесс обновления данных {} пользователя {}", dto, login);
+        return accountFeign.updateUserAccounts(new EditUserAccountDto(login, dto.name(), dto.birthdate()));
     }
 }

@@ -29,6 +29,7 @@ public class User implements Serializable {
     private String name;
     @Column(nullable = false)
     private LocalDate birthdate;
+    @ToString.Exclude
     @Builder.Default
     @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Account> accounts = new ArrayList<>();

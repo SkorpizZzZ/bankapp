@@ -1,14 +1,20 @@
 package org.company.account.service;
 
-import org.company.account.dto.UserDto;
+import org.company.account.dto.*;
+
+import java.util.List;
 
 public interface UserService {
 
-    UserDto createUser(UserDto user);
+    CreateUserDto createUser(CreateUserDto user);
 
     UserDto findUserByLogin(String username);
 
-    UserDto updatePassword(UserDto user);
+    UpdatePasswordDto updatePassword(UpdatePasswordDto user);
 
-    UserDto updateUserAccounts(UserDto user);
+    EditUserAccountDto updateUserAccounts(EditUserAccountDto user);
+
+    void transfer(String login, TransferExchangeDto transferDto);
+
+    List<EditUserAccountDto> findAllUsersData();
 }

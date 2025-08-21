@@ -1,11 +1,13 @@
 package org.company.account.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.company.account.dto.UserDto;
+import org.company.account.dto.*;
 import org.company.account.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -14,13 +16,27 @@ public class UserController {
 
     private final UserService userService;
 
+    @GetMapping("/data")
+    public ResponseEntity<List<EditUserAccountDto>> findAllUsersData() {
+        return ResponseEntity.ok(userService.findAllUsersData());
+    }
+
+    @PostMapping("/transfer/{login}")
+    public ResponseEntity<Void> transfer(
+            @PathVariable("login") String login,
+            @RequestBody TransferExchangeDto transferDto
+    ) {
+        userService.transfer(login, transferDto);
+     return ResponseEntity.ok().build();
+    }
+
     @PutMapping("/editUserAccounts")
-    public ResponseEntity<UserDto> updateUserAccounts(@RequestBody UserDto user) {
+    public ResponseEntity<EditUserAccountDto> updateUserAccounts(@RequestBody EditUserAccountDto user) {
      return ResponseEntity.ok(userService.updateUserAccounts(user));
     }
 
     @PostMapping
-    public ResponseEntity<UserDto> createUser(@RequestBody UserDto user) {
+    public ResponseEntity<CreateUserDto> createUser(@RequestBody CreateUserDto user) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(user));
     }
 
@@ -30,7 +46,7 @@ public class UserController {
     }
 
     @PutMapping("/editPassword")
-    public ResponseEntity<UserDto> updatePassword(@RequestBody UserDto user) {
+    public ResponseEntity<UpdatePasswordDto> updatePassword(@RequestBody UpdatePasswordDto user) {
         return ResponseEntity.ok(userService.updatePassword(user));
     };
 }

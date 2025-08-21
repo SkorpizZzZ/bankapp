@@ -18,13 +18,14 @@ public class Account {
     @EqualsAndHashCode.Exclude
     private Long accountId;
     @Builder.Default
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String currency = "RUB";
     @Builder.Default
     @Column(nullable = false)
     private BigDecimal balance = BigDecimal.ZERO;
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
+    @ToString.Exclude
     private User user;
 }
 

@@ -17,10 +17,10 @@
                 <constraints primaryKey="true"/>
             </column>
             <column name="currency" type="varchar(3)" defaultValue="RUB">
-                <constraints nullable ="false" unique="true"/>
+                <constraints nullable ="false"/>
             </column>
             <column name="balance" type="numeric(19,2)" defaultValue="0.00">
-                <constraints nullable ="false"/>
+                <constraints nullable ="false" checkConstraint="balance >= 0"/>
             </column>
             <column name="user_id" type="bigint">
                 <constraints

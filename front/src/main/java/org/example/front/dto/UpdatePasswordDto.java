@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import java.util.Objects;
 
 public record UpdatePasswordDto(
+        String login,
         @NotBlank
         String password,
         @NotBlank

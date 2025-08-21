@@ -5,4 +5,5 @@ include 'account'
 include 'eurekaServer'
 include 'configServer'
 include 'gateway'
-
+include 'transfer'
+include 'exchange'

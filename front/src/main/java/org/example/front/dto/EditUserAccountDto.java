@@ -8,6 +8,7 @@ import org.example.front.controller.validator.Adult;
 import java.time.LocalDate;
 
 public record EditUserAccountDto(
+        String login,
         @NotBlank
         String name,
         @NotNull
