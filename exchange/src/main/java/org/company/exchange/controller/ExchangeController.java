@@ -2,6 +2,7 @@ package org.company.exchange.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.company.exchange.dto.CurrencyDto;
+import org.company.exchange.dto.RateDto;
 import org.company.exchange.service.ExchangeService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +17,11 @@ import java.util.List;
 public class ExchangeController {
 
     private final ExchangeService exchangeService;
+
+    @GetMapping("/rates")
+    public ResponseEntity<List<RateDto>> findAllRates() {
+        return ResponseEntity.ok(exchangeService.findAllRates());
+    }
 
     @GetMapping
     public ResponseEntity<List<CurrencyDto>> findAll() {

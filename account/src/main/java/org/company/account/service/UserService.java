@@ -17,4 +17,8 @@ public interface UserService {
     void transfer(String login, TransferExchangeDto transferDto);
 
     List<EditUserAccountDto> findAllUsersData();
+
+    void withdraw(String login, CashDto cash);
+
+    void deposit(String login, CashDto cash);
 }

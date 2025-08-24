@@ -16,4 +16,6 @@ public interface CurrencyRepository extends JpaRepository<Currency, Long> {
             WHERE c.name LIKE :name
             """)
     Optional<BigDecimal> findValueByName(@Param("name") String name);
+
+    Optional<Currency> findByName(String name);
 }

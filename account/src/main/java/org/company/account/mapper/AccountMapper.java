@@ -21,7 +21,7 @@ public interface AccountMapper {
     Account accountDtoToEntity(AccountDto accountDto);
 
     default List<AccountDto> toAccountDtoList(List<Account> accounts, List<CurrencyDto> currencies) {
-        if (CollectionUtils.isEmpty(accounts)) {
+        if (CollectionUtils.isEmpty(accounts) || CollectionUtils.isEmpty(currencies)) {
             return Collections.emptyList();
         }
         List<AccountDto> accountDtoList = new ArrayList<>(accounts.size());

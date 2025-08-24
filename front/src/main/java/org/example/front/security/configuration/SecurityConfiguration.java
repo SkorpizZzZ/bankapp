@@ -1,5 +1,6 @@
 package org.example.front.security.configuration;
 
+import feign.FeignException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -54,10 +55,11 @@ public class SecurityConfiguration {
                 String errorMessage;
                 if (exception instanceof BadCredentialsException) {
                     errorMessage = "Неверный логин или пароль";
+                } else if (exception.getCause() instanceof FeignException) {
+                    errorMessage = ((FeignException) exception.getCause()).contentUTF8();
                 } else {
                     errorMessage = "Ошибка аутентификации: " + exception.getMessage();
                 }
-
                 request.getSession().setAttribute("error", errorMessage);
 
                 response.sendRedirect("/login?error");

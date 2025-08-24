@@ -7,6 +7,7 @@ import org.example.front.dto.CreateUserDto;
 import org.example.front.dto.EditUserAccountDto;
 import org.example.front.dto.UpdatePasswordDto;
 import org.example.front.dto.UserDto;
+import org.example.front.exception.FrontException;
 import org.example.front.feign.AccountFeign;
 import org.example.front.mapper.UserMapper;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -39,7 +40,15 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     @Override
     public CreateUserDto createUser(CreateUserDto user) {
         log.info("Процесс добавления пользователя {}", user);
-        return accountFeign.createUser(mapper.encodePassAndReturn(user, passwordEncoder));
+        try {
+            return accountFeign.createUser(mapper.encodePassAndReturn(user, passwordEncoder));
+        } catch (FeignException.ServiceUnavailable e) {
+            log.error("Аккаунт сервис не доступен");
+            throw new FrontException("Аккаунт сервис не доступен", e.status());
+        } catch (FeignException e) {
+            log.error(e.contentUTF8());
+            throw new FrontException(e.contentUTF8(), e.status());
+        }
     }
 
     @Override

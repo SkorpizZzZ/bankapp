@@ -1,5 +1,6 @@
 package org.company.account.service;
 
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.String.format;
@@ -36,6 +38,8 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final AccountMapper accountMapper;
 
+    private final NotificationOutboxService notificationOutboxService;
+
 
     @Override
     @Transactional
@@ -45,6 +49,7 @@ public class UserServiceImpl implements UserService {
         User savedUser = userRepository.save(userMapper.createUserDtoToEntity(user));
         savedUser.setAccounts(saveAccounts(savedUser));
         log.debug("Пользователь добавлен {}", savedUser);
+        notificationOutboxService.createMessage(user.login(), "Пользователь добавлен");
         return userMapper.entityToCreateUserDto(savedUser);
     }
 
@@ -74,7 +79,7 @@ public class UserServiceImpl implements UserService {
         userRepository.findUserByLogin(login)
                 .ifPresent(user -> {
                     log.error("Пользователь с логином {} уже существует", login);
-                    throw new AccountException(format("Пользователь с логином %s уже существует", login), HttpStatus.FORBIDDEN);
+                    throw new AccountException(format("Пользователь с логином %s уже существует", login), HttpStatus.FORBIDDEN.value());
                 });
     }
 
@@ -84,7 +89,14 @@ public class UserServiceImpl implements UserService {
         log.info("Процесс поиска пользователя по логину {}", login);
         User user = userRepository.findUserByLogin(login)
                 .orElseThrow(() -> new UserNotFoundException(format("Пользователь с логином %s не найден", login)));
-        List<CurrencyDto> currencies = exchangeFeign.findAll();
+        List<CurrencyDto> currencies = new ArrayList<>();
+        try {
+            currencies = exchangeFeign.findAll();
+        } catch (FeignException.ServiceUnavailable e) {
+            log.warn("Сервис валют не доступен");
+        } catch (FeignException e) {
+            log.warn(e.contentUTF8());
+        }
         log.debug("Найдены все доступные валюты {}", currencies);
         return userMapper.entityToUserDto(user, accountMapper.toAccountDtoList(user.getAccounts(), currencies));
     }
@@ -144,6 +156,55 @@ public class UserServiceImpl implements UserService {
                 .toList();
     }
 
+    @Override
+    @Transactional
+    public void withdraw(String login, CashDto cash) {
+        log.info("Процесс снятия наличных на сумму {} со счета {} у пользователя {}", cash.value(), cash.currency(), login);
+        User user = userRepository.findUserByLogin(login)
+                .orElseThrow(() -> new UserNotFoundException(format("Пользователь с логином %s не найден", login)));
+        log.debug("Пользователь найден {}", user);
+        Account withdrawAccount = getProccesingCashAccount(login, cash, user);
+        log.debug("Найден аккаунт для снятия наличных {}", withdrawAccount);
+        ifValueMoreThanCurrentBalanceThrow(withdrawAccount.getBalance(), cash.value());
+        withdrawMoney(withdrawAccount, cash.value());
+    }
+
+    private void withdrawMoney(Account withdrawAccount, BigDecimal value) {
+        log.debug("Процесс снятия наличных с аккаунта {} на сумму {}", withdrawAccount, value);
+        withdrawAccount.setBalance(withdrawAccount.getBalance().subtract(value));
+        Account account = accountRepository.save(withdrawAccount);
+        log.debug("Наличные сняты {}", account);
+    }
+
+    private Account getProccesingCashAccount(String login, CashDto cash, User user) {
+        return user.getAccounts().stream()
+                .filter(acc -> acc.getCurrency().equalsIgnoreCase(cash.currency()))
+                .findFirst()
+                .orElseThrow(() -> new AccountException(
+                        format("У пользователя %s нет счета с валютой %s", login, cash.currency()),
+                        HttpStatus.NOT_FOUND.value())
+                );
+    }
+
+    @Override
+    @Transactional
+    public void deposit(String login, CashDto cash) {
+        log.info("Процесс пополнения баланса счета на сумму {} со счета {} у пользователя {}", cash.value(), cash.currency(), login);
+        User user = userRepository.findUserByLogin(login)
+                .orElseThrow(() -> new UserNotFoundException(format("Пользователь с логином %s не найден", login)));
+        log.debug("Пользователь найден {}", user);
+        Account depositAccount = getProccesingCashAccount(login, cash, user);
+        log.debug("Найден аккаунт для пополнения баланса счета {}", depositAccount);
+        depositMoney(depositAccount, cash.value());
+    }
+
+    private void depositMoney(Account depositAccount, BigDecimal value) {
+        log.debug("Процесс пополнения баланса счета {} на сумму {}", depositAccount, value);
+        depositAccount.setBalance(depositAccount.getBalance().add(value));
+        Account account = accountRepository.save(depositAccount);
+        log.debug("Баланс пополнен {}", account);
+    }
+
     private Account getExternalAccount(TransferExchangeDto transferDto) {
         User userTo = userRepository.findUserByLogin(transferDto.toLogin())
                 .orElseThrow(() -> new UserNotFoundException(format("Пользователь с логином %s не найден", transferDto.toLogin())));
@@ -152,10 +213,10 @@ public class UserServiceImpl implements UserService {
     }
 
     private void ifValueMoreThanCurrentBalanceThrow(BigDecimal balance, BigDecimal value) {
-        log.debug("Процесс проверки, что средств на балансе {} достаточно для перевода {}", balance, value);
+        log.debug("Процесс проверки, что средств на балансе {} достаточно для перевода/снятия {}", balance, value);
         if (value.compareTo(balance) > 0) {
             log.error("На балансе не достаточно средств");
-            throw new AccountException("На балансе не достаточно средств", HttpStatus.UNPROCESSABLE_ENTITY);
+            throw new AccountException("На балансе не достаточно средств", HttpStatus.UNPROCESSABLE_ENTITY.value());
         }
     }
 

@@ -6,7 +6,7 @@
     <script language="JavaScript">
         setInterval(() => {
             var td = document.getElementById('exchange_rates');
-            fetch('http://localhost:8080/api/rates')
+            fetch('http://localhost:1010/rates')
                 .then(response => response.json())
                 .then(json => {
                     var table = '<table style="width:100%;margin-left:auto;margin-right:auto;border-radius:2%;padding:10px;background-color:whitesmoke;">';
@@ -35,6 +35,9 @@
 <a href="/logout" style="float:right;">
     <b>ВЫЙТИ &cudarrr;</b>
 </a>
+<tr th:if="${globalErrors!=null}" th:each="globalError : ${globalErrors}">
+    <td style="color:red;" th:text="${globalError}"/>
+</tr>
 <table style="width:70%;margin-left:auto;margin-right:auto;">
     <tr><td style="padding:2px;">
         <form method="post" th:action="${'/users/editPassword'}">
@@ -97,7 +100,7 @@
         </form>
     </td></tr>
     <tr><td style="padding:2px;">
-        <form method="post" th:action="${'/user/'+login+'/cash'}">
+        <form method="post" th:action="${'/user/cash'}">
             <table style="width:100%;margin-left:auto;margin-right:auto;border-radius:2%;padding:10px;background-color:whitesmoke;">
                 <tr th:if="${cashErrors!=null}" th:each="cashError : ${cashErrors}">
                     <td style="color:red;" th:text="${cashError}"/>

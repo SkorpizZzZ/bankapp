@@ -16,6 +16,18 @@ public class UserController {
 
     private final UserService userService;
 
+    @PutMapping("/withdraw/{login}")
+    ResponseEntity<Void> withdraw(@PathVariable("login") String login, @RequestBody CashDto cash) {
+        userService.withdraw(login, cash);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/deposit/{login}")
+    ResponseEntity<Void> deposit(@PathVariable("login") String login, @RequestBody CashDto cash) {
+        userService.deposit(login, cash);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/data")
     public ResponseEntity<List<EditUserAccountDto>> findAllUsersData() {
         return ResponseEntity.ok(userService.findAllUsersData());
