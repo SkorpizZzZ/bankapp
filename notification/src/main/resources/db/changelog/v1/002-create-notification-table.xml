@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+    <changeSet id="create-notification-table" author="ilgiznigmatullin (generated)">
+        <preConditions>
+            <and>
+                <not>
+                    <tableExists tableName="notification" schemaName="${schemaName}"/>
+                </not>
+            </and>
+        </preConditions>
+        <createTable tableName="notification" schemaName="${schemaName}">
+            <column name="id" type="bigserial">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="source_id" type="bigint">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="login" type="varchar(255)">
+                <constraints nullable ="false"/>
+            </column>
+            <column name="message" type="varchar(255)">
+                <constraints nullable ="false"/>
+            </column>
+            <column name="message_time" type="timestamp">
+                <constraints nullable ="false"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable tableName="notification" schemaName="${schemaName}"/>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

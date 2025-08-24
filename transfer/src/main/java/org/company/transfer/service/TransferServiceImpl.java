@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 
+import static java.lang.String.format;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -22,10 +24,34 @@ public class TransferServiceImpl implements TransferService {
     private final AccountFeign accountFeign;
     private final ExchangeFeign exchangeFeign;
 
+    private final NotificationOutboxService notificationOutboxService;
+
     private final TransferMapper transferMapper;
 
     @Override
     public TransferExchangeDto transfer(String login, TransferDto transferDto) {
+        BigDecimal convertedValue = tryConvertValueOrElseThrow(transferDto);
+        TransferExchangeDto transferExchangeDto = transferMapper.transferDtoToTransferExchangeDto(transferDto, convertedValue);
+        TransferExchangeDto result = tryTransferOrElseThrow(login, transferExchangeDto);
+        log.info("Трансфер пользователю {} от пользователя {} состоялся", transferDto.toLogin(), login);
+        return result;
+    }
+
+    private TransferExchangeDto tryTransferOrElseThrow(String login, TransferExchangeDto transferExchangeDto) {
+        try {
+            TransferExchangeDto transfer = accountFeign.transfer(login, transferExchangeDto);
+            notificationOutboxService.createMessage(login, format("Трансфер пользователю %s состоялся", transferExchangeDto.toLogin()));
+            return transfer;
+        } catch (FeignException.ServiceUnavailable e) {
+            log.warn("Аккаунт сервис не доступен");
+            throw new TransferException("Аккаунт сервис не доступен", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        } catch (FeignException e) {
+            log.error(e.contentUTF8());
+            throw new TransferException(e.contentUTF8(), e.status());
+        }
+    }
+
+    private BigDecimal tryConvertValueOrElseThrow(TransferDto transferDto) {
         BigDecimal convertedValue;
         try {
             convertedValue = exchangeFeign.exchange(transferDto.fromCurrency(), transferDto.toCurrency(), transferDto.value());
@@ -36,15 +62,6 @@ public class TransferServiceImpl implements TransferService {
             log.error(e.contentUTF8());
             throw new TransferException(e.contentUTF8(), e.status());
         }
-        TransferExchangeDto transferExchangeDto = transferMapper.transferDtoToTransferExchangeDto(transferDto, convertedValue);
-        try {
-            return accountFeign.transfer(login, transferExchangeDto);
-        } catch (FeignException.ServiceUnavailable e) {
-            log.warn("Аккаунт сервис не доступен");
-            throw new TransferException("Аккаунт сервис не доступен", HttpStatus.INTERNAL_SERVER_ERROR.value());
-        } catch (FeignException e) {
-            log.error(e.contentUTF8());
-            throw new TransferException(e.contentUTF8(), e.status());
-        }
+        return convertedValue;
     }
 }

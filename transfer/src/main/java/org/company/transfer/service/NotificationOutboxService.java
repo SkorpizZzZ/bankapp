@@ -1,4 +1,4 @@
-package org.company.account.service;
+package org.company.transfer.service;
 
 public interface NotificationOutboxService {
 

@@ -109,6 +109,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new UserNotFoundException(format("Пользователь с логином %s не найден", user.login())));
         foundUser.setPassword(user.password());
         User updatedUser = userRepository.save(foundUser);
+        notificationOutboxService.createMessage(updatedUser.getLogin(), "Процесс обновления пароля завершился успешно");
         log.debug("Процесс обновления пароля {} завершился успешно", updatedUser);
         return userMapper.entityToUpdatePasswordDto(updatedUser);
     }
@@ -123,6 +124,7 @@ public class UserServiceImpl implements UserService {
         foundUser.setBirthdate(user.birthdate());
         User updatedUser = userRepository.save(foundUser);
         EditUserAccountDto result = userMapper.entityToEditUserAccountDto(updatedUser);
+        notificationOutboxService.createMessage(result.login(), "Процесс обновления персональных данных пользователя завершился успешно");
         log.debug("Данные обновлены {}", result);
         return result;
     }
@@ -145,6 +147,10 @@ public class UserServiceImpl implements UserService {
         }
         transferMoney(accountFrom, accountTo, transferDto.value(), transferDto.convertedValue());
         List<Account> accounts = accountRepository.saveAll(List.of(accountFrom, accountTo));
+        notificationOutboxService.createMessage(
+                login,
+                format("Процесс перевода средств пользователю %s", transferDto.toLogin())
+        );
         log.debug("Средства переведены {}", accounts);
     }
 
@@ -166,6 +172,7 @@ public class UserServiceImpl implements UserService {
         Account withdrawAccount = getProccesingCashAccount(login, cash, user);
         log.debug("Найден аккаунт для снятия наличных {}", withdrawAccount);
         ifValueMoreThanCurrentBalanceThrow(withdrawAccount.getBalance(), cash.value());
+        notificationOutboxService.createMessage(login, "Процесс снятия наличных средств");
         withdrawMoney(withdrawAccount, cash.value());
     }
 
@@ -195,6 +202,7 @@ public class UserServiceImpl implements UserService {
         log.debug("Пользователь найден {}", user);
         Account depositAccount = getProccesingCashAccount(login, cash, user);
         log.debug("Найден аккаунт для пополнения баланса счета {}", depositAccount);
+        notificationOutboxService.createMessage(login, "Процесс пополнения средств");
         depositMoney(depositAccount, cash.value());
     }
 
