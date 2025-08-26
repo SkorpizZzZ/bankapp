@@ -5,9 +5,7 @@ import org.company.exchange.dto.CurrencyDto;
 import org.company.exchange.dto.RateDto;
 import org.company.exchange.service.ExchangeService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -17,6 +15,12 @@ import java.util.List;
 public class ExchangeController {
 
     private final ExchangeService exchangeService;
+
+    @PutMapping("/currencies")
+    public ResponseEntity<Void> updateCurrencies(@RequestBody List<CurrencyDto> currencies) {
+        exchangeService.updateCurrencies(currencies);
+        return ResponseEntity.ok().build();
+    }
 
     @GetMapping("/rates")
     public ResponseEntity<List<RateDto>> findAllRates() {

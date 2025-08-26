@@ -7,6 +7,7 @@ import org.company.transfer.dto.TransferDto;
 import org.company.transfer.dto.TransferExchangeDto;
 import org.company.transfer.exception.TransferException;
 import org.company.transfer.feign.AccountFeign;
+import org.company.transfer.feign.BlockerFeign;
 import org.company.transfer.feign.ExchangeFeign;
 import org.company.transfer.mapper.TransferMapper;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,7 @@ public class TransferServiceImpl implements TransferService {
 
     private final AccountFeign accountFeign;
     private final ExchangeFeign exchangeFeign;
+    private final BlockerFeign blockerFeign;
 
     private final NotificationOutboxService notificationOutboxService;
 
@@ -30,6 +32,11 @@ public class TransferServiceImpl implements TransferService {
 
     @Override
     public TransferExchangeDto transfer(String login, TransferDto transferDto) {
+        if (isSuspicious()) {
+            log.warn("Подозрительная операция перевода");
+            notificationOutboxService.createMessage(login, "Подозрительная операция перевода");
+            throw new TransferException("Подозрительная операция перевода", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
         BigDecimal convertedValue = tryConvertValueOrElseThrow(transferDto);
         TransferExchangeDto transferExchangeDto = transferMapper.transferDtoToTransferExchangeDto(transferDto, convertedValue);
         TransferExchangeDto result = tryTransferOrElseThrow(login, transferExchangeDto);
@@ -63,5 +70,18 @@ public class TransferServiceImpl implements TransferService {
             throw new TransferException(e.contentUTF8(), e.status());
         }
         return convertedValue;
+    }
+
+    private boolean isSuspicious() {
+        log.debug("Процесс проверки операции");
+        try {
+            return blockerFeign.isSuspicious();
+        } catch (FeignException.ServiceUnavailable e) {
+            log.warn("Блокер сервис не доступен");
+            return true;
+        } catch (FeignException e) {
+            log.warn(e.getMessage());
+            return true;
+        }
     }
 }

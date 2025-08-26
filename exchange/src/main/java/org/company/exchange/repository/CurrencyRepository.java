@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Optional;
 
 public interface CurrencyRepository extends JpaRepository<Currency, Long> {
@@ -18,4 +19,11 @@ public interface CurrencyRepository extends JpaRepository<Currency, Long> {
     Optional<BigDecimal> findValueByName(@Param("name") String name);
 
     Optional<Currency> findByName(String name);
+
+    @Query("""
+            SELECT c
+            FROM Currency c
+            WHERE c.name IN (:names)
+            """)
+    Collection<Currency> findAllByNames(@Param("names") Collection<String> names);
 }

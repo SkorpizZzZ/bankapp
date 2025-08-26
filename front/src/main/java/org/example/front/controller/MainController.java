@@ -4,6 +4,7 @@ import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.example.front.dto.CurrencyDto;
 import org.example.front.dto.EditUserAccountDto;
 import org.example.front.dto.UserDto;
@@ -14,10 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Slf4j
 @Controller
@@ -35,7 +33,14 @@ public class MainController {
         List<String> globalErrors = new ArrayList<>();
         try {
             user = accountFeign.findUserByLogin(authentication.getName());
-            users = accountFeign.findAllUsersData();
+            users = accountFeign.findAllUsersData().stream()
+                    .filter(editUserAccountDto ->
+                            !StringUtils.equals(
+                                    editUserAccountDto.login(),
+                                    authentication.getName()
+                            )
+                    )
+                    .toList();
         } catch (FeignException.ServiceUnavailable e) {
             log.warn("Аккаунт сервис не доступен");
             globalErrors.add("Аккаунт сервис не доступен");
@@ -46,7 +51,9 @@ public class MainController {
             model.addAttribute("globalErrors", globalErrors);
         }
         try {
-             currencies = exchangeFeign.findAll();
+            currencies = exchangeFeign.findAll().stream()
+                    .sorted(Comparator.comparing(CurrencyDto::currencyId))
+                    .toList();
         } catch (FeignException.ServiceUnavailable e) {
             log.warn("Сервис валют не доступен");
             globalErrors.add("Сервис валют не доступен");

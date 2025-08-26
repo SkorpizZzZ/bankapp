@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.company.cash.dto.CashDto;
 import org.company.cash.exception.CashException;
 import org.company.cash.feign.AccountFeign;
-import org.company.cash.feign.NotificationFeign;
+import org.company.cash.feign.BlockerFeign;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 public class CashServiceImpl implements CashService {
 
     private final AccountFeign accountFeign;
-    private final NotificationFeign notificationFeign;
+    private final BlockerFeign blockerFeign;
 
     private final NotificationOutboxService notificationOutboxService;
 
@@ -23,8 +23,26 @@ public class CashServiceImpl implements CashService {
     @Override
     public void withdraw(String login, CashDto cash) {
         log.info("Процесс снятия наличных со счета пользователя {}", login);
+        if (isSuspicious()) {
+            log.warn("Подозрительная операция снятия наличных");
+            notificationOutboxService.createMessage(login, "Подозрительная операция снятия наличных");
+            return;
+        }
         tryWithdraw(login, cash);
         notificationOutboxService.createMessage(login, "Процесс снятия наличных");
+    }
+
+    private boolean isSuspicious() {
+        log.debug("Процесс проверки операции");
+        try {
+            return blockerFeign.isSuspicious();
+        } catch (FeignException.ServiceUnavailable e) {
+            log.warn("Блокер сервис не доступен");
+            return true;
+        } catch (FeignException e) {
+            log.warn(e.getMessage());
+            return true;
+        }
     }
 
     private void tryWithdraw(String login, CashDto cash) {
@@ -43,6 +61,11 @@ public class CashServiceImpl implements CashService {
     @Override
     public void deposit(String login, CashDto cash) {
         log.info("Процесс пополнения счета пользователя {}", login);
+        if (isSuspicious()) {
+            log.warn("Подозрительная операция пополнения счета");
+            notificationOutboxService.createMessage(login, "Подозрительная операция пополнения счета");
+            return;
+        }
         tryDeposit(login, cash);
         notificationOutboxService.createMessage(login, "Процесс пополнения счета");
     }

@@ -13,4 +13,6 @@ public interface ExchangeService {
     List<CurrencyDto> findAll();
 
     List<RateDto> findAllRates();
+
+    void updateCurrencies(List<CurrencyDto> currencies);
 }

@@ -15,7 +15,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 
@@ -70,6 +73,16 @@ public class ExchangeServiceImpl implements ExchangeService{
                 .toList();
         log.info("Подсчитан курс {}", result);
         return result;
+    }
+
+    @Override
+    @Transactional
+    public void updateCurrencies(List<CurrencyDto> currencies) {
+        Map<String, List<CurrencyDto>> groupedByName = currencies.stream()
+                .collect(Collectors.groupingBy(CurrencyDto::name));
+        Collection<Currency> foundCurrencies = currencyRepository.findAllByNames(groupedByName.keySet());
+        foundCurrencies.forEach(entity -> entity.setValue(groupedByName.get(entity.getName()).getFirst().value()));
+        currencyRepository.saveAll(foundCurrencies);
     }
 
     private RateDto buildRate(Currency otherCurrency, Currency rub) {
