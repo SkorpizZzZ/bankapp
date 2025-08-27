@@ -1,6 +1,5 @@
-package org.company.account.securtity.configuration;
+package org.company.notification.security.configuration;
 
-import feign.RequestInterceptor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,8 +9,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.client.*;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtDecoders;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
@@ -50,36 +47,6 @@ public class SecurityConfiguration {
                         })
                 )
                 .build();
-    }
-
-    @Bean
-    public RequestInterceptor getRequestInterceptor(OAuth2AuthorizedClientManager oAuth2AuthorizedClientManager) {
-        return requestTemplate -> {
-            OAuth2AuthorizedClient client = oAuth2AuthorizedClientManager.authorize(OAuth2AuthorizeRequest
-                    .withClientRegistrationId("bankapp")
-                    .principal("system")
-                    .build()
-            );
-            String accessToken = client.getAccessToken().getTokenValue();
-            requestTemplate
-                    .header("Authorization", "Bearer " + accessToken);
-        };
-    }
-
-    @Bean
-    public OAuth2AuthorizedClientManager authorizedClientManager(
-            ClientRegistrationRepository clientRegistrationRepository,
-            OAuth2AuthorizedClientService authorizedClientService
-    ) {
-        AuthorizedClientServiceOAuth2AuthorizedClientManager manager =
-                new AuthorizedClientServiceOAuth2AuthorizedClientManager(clientRegistrationRepository, authorizedClientService);
-
-        manager.setAuthorizedClientProvider(OAuth2AuthorizedClientProviderBuilder.builder()
-                .clientCredentials()
-                .refreshToken()
-                .build());
-
-        return manager;
     }
 
     @Bean

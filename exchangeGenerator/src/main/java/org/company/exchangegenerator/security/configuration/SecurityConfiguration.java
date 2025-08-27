@@ -1,18 +1,11 @@
-package org.example.front.security.configuration;
+package org.company.exchangegenerator.security.configuration;
 
-import feign.FeignException;
 import feign.RequestInterceptor;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
-import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -23,36 +16,22 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtDecoders;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
 @Configuration
-@EnableWebSecurity
 public class SecurityConfiguration {
-
     @Value("${spring.security.oauth2.client.provider.keycloak.issuer-uri}")
     private String keycloakIssuerUri;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity security) throws Exception {
-        return security
-                .csrf(CsrfConfigurer::disable)
-                .authorizeHttpRequests(customizer -> customizer
-                        .requestMatchers("/signup", "/login").permitAll()
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        return http
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(requests -> requests
                         .anyRequest().authenticated()
                 )
-                .formLogin(form -> form
-                        .loginPage("/login")
-                        .defaultSuccessUrl("/")
-                        .failureHandler(authenticationFailureHandler())
-                )
-                .logout(withDefaults())
                 .oauth2ResourceServer(customizer -> customizer
                         .jwt(jwtCustomizer -> {
                             JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
@@ -71,31 +50,6 @@ public class SecurityConfiguration {
                         })
                 )
                 .build();
-    }
-
-    @Bean
-    public AuthenticationFailureHandler authenticationFailureHandler() {
-        return new SimpleUrlAuthenticationFailureHandler() {
-            @Override
-            public void onAuthenticationFailure(
-                    HttpServletRequest request,
-                    HttpServletResponse response,
-                    AuthenticationException exception
-            ) throws IOException, ServletException {
-
-                String errorMessage;
-                if (exception instanceof BadCredentialsException) {
-                    errorMessage = "Неверный логин или пароль";
-                } else if (exception.getCause() instanceof FeignException) {
-                    errorMessage = ((FeignException) exception.getCause()).contentUTF8();
-                } else {
-                    errorMessage = "Ошибка аутентификации: " + exception.getMessage();
-                }
-                request.getSession().setAttribute("error", errorMessage);
-
-                response.sendRedirect("/login?error");
-            }
-        };
     }
 
     @Bean
@@ -119,10 +73,12 @@ public class SecurityConfiguration {
     ) {
         AuthorizedClientServiceOAuth2AuthorizedClientManager manager =
                 new AuthorizedClientServiceOAuth2AuthorizedClientManager(clientRegistrationRepository, authorizedClientService);
+
         manager.setAuthorizedClientProvider(OAuth2AuthorizedClientProviderBuilder.builder()
                 .clientCredentials()
                 .refreshToken()
                 .build());
+
         return manager;
     }
 
@@ -132,7 +88,7 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    PasswordEncoder passwordEncoder() {
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 }

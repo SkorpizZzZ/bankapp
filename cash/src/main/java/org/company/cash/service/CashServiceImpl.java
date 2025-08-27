@@ -7,6 +7,7 @@ import org.company.cash.dto.CashDto;
 import org.company.cash.exception.CashException;
 import org.company.cash.feign.AccountFeign;
 import org.company.cash.feign.BlockerFeign;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -26,7 +27,7 @@ public class CashServiceImpl implements CashService {
         if (isSuspicious()) {
             log.warn("Подозрительная операция снятия наличных");
             notificationOutboxService.createMessage(login, "Подозрительная операция снятия наличных");
-            return;
+            throw new CashException("Подозрительная операция снятия наличных", HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
         tryWithdraw(login, cash);
         notificationOutboxService.createMessage(login, "Процесс снятия наличных");
@@ -38,10 +39,10 @@ public class CashServiceImpl implements CashService {
             return blockerFeign.isSuspicious();
         } catch (FeignException.ServiceUnavailable e) {
             log.warn("Блокер сервис не доступен");
-            return true;
+            throw new CashException("Блокер сервис не доступен", HttpStatus.INTERNAL_SERVER_ERROR.value());
         } catch (FeignException e) {
             log.warn(e.getMessage());
-            return true;
+            throw new CashException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
     }
 
@@ -64,7 +65,7 @@ public class CashServiceImpl implements CashService {
         if (isSuspicious()) {
             log.warn("Подозрительная операция пополнения счета");
             notificationOutboxService.createMessage(login, "Подозрительная операция пополнения счета");
-            return;
+            throw new CashException("Подозрительная операция пополнения счета", HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
         tryDeposit(login, cash);
         notificationOutboxService.createMessage(login, "Процесс пополнения счета");
