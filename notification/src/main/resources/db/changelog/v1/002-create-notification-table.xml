@@ -17,7 +17,10 @@
                 <constraints primaryKey="true"/>
             </column>
             <column name="source_id" type="bigint">
-                <constraints nullable="false" unique="true"/>
+                <constraints nullable="false"/>
+            </column>
+            <column name="service_name" type="varchar(255)">
+                <constraints nullable="false"/>
             </column>
             <column name="login" type="varchar(255)">
                 <constraints nullable ="false"/>

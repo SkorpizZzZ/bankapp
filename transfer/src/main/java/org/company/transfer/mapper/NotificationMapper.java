@@ -9,5 +9,6 @@ import org.mapstruct.Mapping;
 public interface NotificationMapper {
 
     @Mapping(target = "sourceId", source = "id")
+    @Mapping(target = "serviceName", constant = "transfer")
     NotificationDto notificationOutboxToNotificationDto(NotificationOutbox notificationOutbox);
 }

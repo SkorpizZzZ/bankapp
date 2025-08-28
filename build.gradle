@@ -6,7 +6,7 @@ plugins {
 
 allprojects {
     group = 'org.company'
-    version = '3.0.0-SNAPSHOT'
+    version = '1.0.0-SNAPSHOT'
 }
 
 repositories {

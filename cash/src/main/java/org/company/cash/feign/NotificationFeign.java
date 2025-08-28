@@ -8,6 +8,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient(value = "gateway", contextId = "notification")
 public interface NotificationFeign {
 
-    @PostMapping("/create")
+    @PostMapping("/notification/create")
     void create(@RequestBody NotificationDto notificationDto);
 }

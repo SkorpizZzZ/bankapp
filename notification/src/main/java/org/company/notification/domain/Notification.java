@@ -17,8 +17,10 @@ public class Notification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Exclude
     private Long id;
-    @Column(name = "source_id", nullable = false, updatable = false, unique = true)
+    @Column(name = "source_id", nullable = false, updatable = false)
     private Long sourceId;
+    @Column(name = "service_name", nullable = false, updatable = false)
+    private String serviceName;
     @Column(nullable = false, updatable = false)
     private String login;
     @Column(nullable = false, updatable = false)
