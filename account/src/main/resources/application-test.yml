@@ -1,0 +1,19 @@
+server:
+  port: 0
+
+spring:
+  liquibase:
+    change-log: classpath:/db/changelog/rootChangeLog.xml
+    liquibase-schema: public
+    default-schema: public
+    parameters:
+      schemaName: public
+  security:
+    oauth2:
+      client:
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8888/realms/master
+eureka:
+  client:
+    register-with-eureka: false
