@@ -3,6 +3,7 @@ package org.company.account.controller;
 import lombok.RequiredArgsConstructor;
 import org.company.account.dto.*;
 import org.company.account.service.UserService;
+import org.company.account.service.UserServiceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,8 +17,10 @@ public class UserController {
 
     private final UserService userService;
 
+    private final UserServiceImpl userServiceImpl;
+
     @PutMapping("/withdraw/{login}")
-    ResponseEntity<Void> withdraw(@PathVariable("login") String login, @RequestBody CashDto cash) {
+    ResponseEntity<Void> withdraw(@PathVariable(value = "login") String login, @RequestBody CashDto cash) {
         userService.withdraw(login, cash);
         return ResponseEntity.ok().build();
     }
