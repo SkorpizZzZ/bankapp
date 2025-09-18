@@ -22,7 +22,7 @@ bootJar {
 }
 
 jar {
-    enabled = true
+    enabled = false
 }
 
 subprojects {
@@ -45,6 +45,14 @@ subprojects {
         compileOnly {
             extendsFrom annotationProcessor
         }
+    }
+
+    bootJar {
+        enabled = true
+    }
+
+    jar {
+        enabled = false
     }
 
     dependencies {

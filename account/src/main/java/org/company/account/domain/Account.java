@@ -10,13 +10,11 @@ import java.util.Objects;
 
 @Getter
 @Setter
-@ToString
-@RequiredArgsConstructor
 @Entity
 @Table(name = "accounts")
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class Account implements Serializable {
 
     @Id
@@ -30,7 +28,6 @@ public class Account implements Serializable {
     private BigDecimal balance = BigDecimal.ZERO;
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    @ToString.Exclude
     private User user;
 
     @Override
@@ -47,6 +44,14 @@ public class Account implements Serializable {
     @Override
     public final int hashCode() {
         return this instanceof HibernateProxy proxy ? proxy.getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "(" +
+                "accountId = " + accountId + ", " +
+                "currency = " + currency + ", " +
+                "balance = " + balance + ")";
     }
 }
 

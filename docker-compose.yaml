@@ -1,0 +1,451 @@
+services:
+  postgres:
+    image: postgres:17.6
+    container_name: postgres
+    restart: "no"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: bank
+    healthcheck:
+      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+    networks:
+      - bankapp-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.3.3
+    container_name: keycloak
+    restart: "no"
+    command:
+      - "start-dev"
+      - "--import-realm"
+    ports:
+      - "8888:8888"
+    environment:
+      KC_HTTP_PORT: 8888
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: "true"
+    volumes:
+      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json
+    healthcheck:
+      test:
+        [ "CMD-SHELL", "{ exec 3<>/dev/tcp/localhost/9000 && echo -e \"GET /health/ready HTTP/1.1\nhost: localhost:9000\n\" >&3 && timeout --preserve-status 1 cat <&3 | grep -m 1 -q 'status.*UP'; }" ]
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    networks:
+      - bankapp-network
+
+  bankapp.config-server:
+    image: bankapp.config-server:latest
+    container_name: configServer
+    build:
+      context: ./configServer
+      dockerfile: Dockerfile
+      args:
+        DOCKER_BUILDKIT: 1
+    restart: on-failure
+    ports:
+      - "1012:1012"
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:1012/actuator/health || exit 1
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    labels:
+      amplicode.image: springboot
+    networks:
+      - bankapp-network
+
+  bankapp.eureka-server:
+    image: bankapp.eureka-server:latest
+    container_name: eurekaServer
+    build:
+      context: ./eurekaServer
+      dockerfile: Dockerfile
+      args:
+        DOCKER_BUILDKIT: 1
+    restart: on-failure
+    environment:
+      SPRING_CONFIG_IMPORT: configserver:http://configServer:1012
+    ports:
+      - "8761:8761"
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8761/actuator/health || exit 1
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      bankapp.config-server:
+        condition: service_healthy
+    labels:
+      amplicode.image: springboot
+    networks:
+      - bankapp-network
+
+  bankapp.gateway:
+    image: bankapp.gateway:latest
+    container_name: gateway
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+      args:
+        DOCKER_BUILDKIT: 1
+    restart: on-failure
+    environment:
+      SPRING_CONFIG_IMPORT: configserver:http://configServer:1012
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaServer:8761/eureka/
+    ports:
+      - "1014:1014"
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:1014/actuator/health || exit 1
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      bankapp.config-server:
+        condition: service_healthy
+      bankapp.eureka-server:
+        condition: service_healthy
+    labels:
+      amplicode.image: springboot
+    networks:
+      - bankapp-network
+
+  bankapp.account:
+    image: bankapp.account:latest
+    container_name: account
+    build:
+      context: ./account
+      dockerfile: Dockerfile
+      args:
+        DOCKER_BUILDKIT: 1
+    restart: on-failure
+    environment:
+      SPRING_CONFIG_IMPORT: configserver:http://configServer:1012
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres?currentSchema=account
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_LIQUIBASE_URL: jdbc:postgresql://postgres:5432/postgres?currentSchema=account
+      SPRING_LIQUIBASE_USER: postgres
+      SPRING_LIQUIBASE_PASSWORD: postgres
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://keycloak:8888/realms/bankapp
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8888/realms/bankapp
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaServer:8761/eureka/
+    ports:
+      - "1011:1011"
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:1011/actuator/health || exit 1
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      bankapp.config-server:
+        condition: service_healthy
+      bankapp.eureka-server:
+        condition: service_healthy
+    labels:
+      amplicode.image: springboot
+    networks:
+      - bankapp-network
+
+  bankapp.blocker:
+    image: bankapp.blocker:latest
+    container_name: blocker
+    build:
+      context: ./blocker
+      dockerfile: Dockerfile
+      args:
+        DOCKER_BUILDKIT: 1
+    restart: on-failure
+    environment:
+      SPRING_CONFIG_IMPORT: configserver:http://configServer:1012
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://keycloak:8888/realms/bankapp
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8888/realms/bankapp
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaServer:8761/eureka/
+    ports:
+      - "1020:1020"
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:1020/actuator/health || exit 1
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      bankapp.config-server:
+        condition: service_healthy
+      bankapp.eureka-server:
+        condition: service_healthy
+    labels:
+      amplicode.image: springboot
+    networks:
+      - bankapp-network
+
+  bankapp.cash:
+    image: bankapp.cash:latest
+    container_name: cash
+    build:
+      context: ./cash
+      dockerfile: Dockerfile
+      args:
+        DOCKER_BUILDKIT: 1
+    restart: on-failure
+    environment:
+      SPRING_CONFIG_IMPORT: configserver:http://configServer:1012
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres?currentSchema=account
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_LIQUIBASE_URL: jdbc:postgresql://postgres:5432/postgres?currentSchema=account
+      SPRING_LIQUIBASE_USER: postgres
+      SPRING_LIQUIBASE_PASSWORD: postgres
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://keycloak:8888/realms/bankapp
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8888/realms/bankapp
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaServer:8761/eureka/
+    ports:
+      - "1017:1017"
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:1017/actuator/health || exit 1
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      bankapp.config-server:
+        condition: service_healthy
+      bankapp.eureka-server:
+        condition: service_healthy
+    labels:
+      amplicode.image: springboot
+    networks:
+      - bankapp-network
+
+  bankapp.exchange:
+    image: bankapp.exchange:latest
+    container_name: exchange
+    build:
+      context: ./exchange
+      dockerfile: Dockerfile
+      args:
+        DOCKER_BUILDKIT: 1
+    restart: on-failure
+    environment:
+      SPRING_CONFIG_IMPORT: configserver:http://configServer:1012
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres?currentSchema=account
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_LIQUIBASE_URL: jdbc:postgresql://postgres:5432/postgres?currentSchema=account
+      SPRING_LIQUIBASE_USER: postgres
+      SPRING_LIQUIBASE_PASSWORD: postgres
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://keycloak:8888/realms/bankapp
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8888/realms/bankapp
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaServer:8761/eureka/
+    ports:
+      - "1016:1016"
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:1016/actuator/health || exit 1
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      bankapp.config-server:
+        condition: service_healthy
+      bankapp.eureka-server:
+        condition: service_healthy
+    labels:
+      amplicode.image: springboot
+    networks:
+      - bankapp-network
+
+  bankapp.exchange-generator:
+    image: bankapp.exchange-generator:latest
+    container_name: exchangeGenerator
+    build:
+      context: ./exchangeGenerator
+      dockerfile: Dockerfile
+      args:
+        DOCKER_BUILDKIT: 1
+    restart: on-failure
+    environment:
+      SPRING_CONFIG_IMPORT: configserver:http://configServer:1012
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://keycloak:8888/realms/bankapp
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8888/realms/bankapp
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaServer:8761/eureka/
+    ports:
+      - "1019:1019"
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:1019/actuator/health || exit 1
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      bankapp.config-server:
+        condition: service_healthy
+      bankapp.eureka-server:
+        condition: service_healthy
+    labels:
+      amplicode.image: springboot
+    networks:
+      - bankapp-network
+
+  bankapp.front:
+    image: bankapp.front:latest
+    container_name: front
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+      args:
+        DOCKER_BUILDKIT: 1
+    restart: on-failure
+    environment:
+      SPRING_CONFIG_IMPORT: configserver:http://configServer:1012
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://keycloak:8888/realms/bankapp
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8888/realms/bankapp
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaServer:8761/eureka/
+    ports:
+      - "1010:1010"
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:1010/actuator/health || exit 1
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      bankapp.config-server:
+        condition: service_healthy
+      bankapp.eureka-server:
+        condition: service_healthy
+    labels:
+      amplicode.image: springboot
+    networks:
+      - bankapp-network
+
+  bankapp.notification:
+    image: bankapp.notification:latest
+    container_name: notification
+    build:
+      context: ./notification
+      dockerfile: Dockerfile
+      args:
+        DOCKER_BUILDKIT: 1
+    restart: on-failure
+    environment:
+      SPRING_CONFIG_IMPORT: configserver:http://configServer:1012
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres?currentSchema=account
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_LIQUIBASE_URL: jdbc:postgresql://postgres:5432/postgres?currentSchema=account
+      SPRING_LIQUIBASE_USER: postgres
+      SPRING_LIQUIBASE_PASSWORD: postgres
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://keycloak:8888/realms/bankapp
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8888/realms/bankapp
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaServer:8761/eureka/
+    ports:
+      - "1018:1018"
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:1018/actuator/health || exit 1
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      bankapp.config-server:
+        condition: service_healthy
+      bankapp.eureka-server:
+        condition: service_healthy
+    labels:
+      amplicode.image: springboot
+    networks:
+      - bankapp-network
+
+  bankapp.transfer:
+    image: bankapp.transfer:latest
+    container_name: transfer
+    build:
+      context: ./transfer
+      dockerfile: Dockerfile
+      args:
+        DOCKER_BUILDKIT: 1
+    restart: on-failure
+    environment:
+      SPRING_CONFIG_IMPORT: configserver:http://configServer:1012
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres?currentSchema=account
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_LIQUIBASE_URL: jdbc:postgresql://postgres:5432/postgres?currentSchema=account
+      SPRING_LIQUIBASE_USER: postgres
+      SPRING_LIQUIBASE_PASSWORD: postgres
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://keycloak:8888/realms/bankapp
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8888/realms/bankapp
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaServer:8761/eureka/
+    ports:
+      - "1013:1013"
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:1013/actuator/health || exit 1
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      bankapp.config-server:
+        condition: service_healthy
+      bankapp.eureka-server:
+        condition: service_healthy
+    labels:
+      amplicode.image: springboot
+    networks:
+      - bankapp-network
+
+volumes:
+  postgres_data:
+networks:
+  bankapp-network:
