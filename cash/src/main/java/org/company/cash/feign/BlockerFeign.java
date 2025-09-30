@@ -3,9 +3,9 @@ package org.company.cash.feign;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 
-@FeignClient(value = "gateway", contextId = "blocker")
+@FeignClient(value = "blocker", url = "${app.feign.blocker-service.url}")
 public interface BlockerFeign {
 
-    @GetMapping("/blocker")
+    @GetMapping
     Boolean isSuspicious();
 }

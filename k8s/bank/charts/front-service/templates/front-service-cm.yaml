@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: front-service-cm
+data:
+  SERVER_PORT: "8080"
+  APP_FEIGN_ACCOUNT_SERVICE_URL: "http://bank-app-account-service.default.svc.cluster.local:8080"
+  APP_FEIGN_CASH_SERVICE_URL: "http://bank-app-cash-service.default.svc.cluster.local:8080"
+  APP_FEIGN_EXCHANGE_SERVICE_URL: "http://bank-app-exchange-service.default.svc.cluster.local:8080"
+  APP_FEIGN_TRANSFER_SERVICE_URL: "http://bank-app-transfer-service.default.svc.cluster.local:8080"
+  SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: "http://bank-app-keycloak-service:8888/realms/bankapp"

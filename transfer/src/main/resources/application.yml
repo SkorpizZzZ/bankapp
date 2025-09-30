@@ -1,10 +1,11 @@
 spring:
   application:
     name: transfer
-  config:
-    import: optional:configserver:http://localhost:1012
   profiles:
-    active: default
-  cloud:
-    config:
-      label: main
+    group:
+      local:
+        - local
+      kuber:
+        - kuber
+      test:
+        - test

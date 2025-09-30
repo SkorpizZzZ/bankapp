@@ -1,0 +1,43 @@
+global:
+  domain: bank.local
+  database:
+    host: "bank-app-shared-db"
+    port: 5432
+    name: "bankapp"
+    username: "bankapp"
+
+transfer-service:
+  config:
+    database_url: "jdbc:postgresql://bank-app-shared-db:5432/bankapp?currentSchema=transfer"
+    database_username: "bankapp"
+
+notification-service:
+  config:
+    database_url: "jdbc:postgresql://bank-app-shared-db:5432/bankapp?currentSchema=notification"
+    database_username: "bankapp"
+
+exchange-service:
+  config:
+    database_url: "jdbc:postgresql://bank-app-shared-db:5432/bankapp?currentSchema=exchange"
+    database_username: "bankapp"
+
+cash-service:
+  config:
+    database_url: "jdbc:postgresql://bank-app-shared-db:5432/bankapp?currentSchema=cash"
+    database_username: "bankapp"
+
+account-service:
+  config:
+    database_url: "jdbc:postgresql://bank-app-shared-db:5432/bankapp?currentSchema=account"
+    database_username: "bankapp"
+
+shared-db:
+  enabled: true
+  auth:
+    database: bankapp
+    username: bankapp
+    password: "changeM3Customer!" # Example: Not recommended for production
+  primary:
+    persistence:
+      enabled: true
+      size: 1Gi

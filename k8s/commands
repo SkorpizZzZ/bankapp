@@ -1,0 +1,55 @@
+kubectl set env deployment/bankapp-front-deployment server.port=8180
+
+k rollout undo deployment/hello-k8s-deployment
+
+kubectl create deployment bankapp-front-deployment --image=bankapp.front-k8s:1.0 -n bankapp
+
+kubectl set image deployment/bankapp-front-deployment hello-k8s=local/hello-k8s:1.1
+
+k run bankapp-front-pod --image=bankapp.front-k8s:1.0 --env="SPRING_PROFILES_ACTIVE=kuber"
+
+docker tag bankapp.front bankapp.front-k8s:1.0
+
+k get pods -o wide -n bankapp
+
+k delete pod bankapp-front-pod -n bankapp
+
+eval $(minikube docker-env)
+
+kubectl expose pod hello-k8s-pod --port=8080 --target-port=8080 --type=ClusterIP --name service/hello-k8s-svc exposed
+
+minikube addons enable ingress
+minikube service front-service
+
+docker build -t front-service:1.0 ./front
+minikube image load front-service:1.0
+kubectl create deployment bankapp-front-deployment --image=front-service:1.0 -n bankapp
+kubectl set env deployment/bankapp-front-deployment -n bankapp SPRING_PROFILES_ACTIVE=kuber
+
+docker build -t account-service:1.0 ./account
+minikube image load account-service:1.0
+
+docker build -t blocker-service:1.0 ./blocker
+minikube image load blocker-service:1.0
+
+docker build -t cash-service:1.0 ./cash
+minikube image load cash-service:1.0
+
+docker build -t exchange-service:1.0 ./exchange
+minikube image load exchange-service:1.0
+
+docker build -t exchange-generator-service:1.0 ./exchangeGenerator
+minikube image load exchange-generator-service:1.0
+
+docker build -t notification-service:1.0 ./notification
+minikube image load notification-service:1.0
+
+docker build -t transfer-service:1.0 ./transfer
+minikube image load transfer-service:1.0
+
+docker build -t keycloak-service:1.0 ./keycloak
+minikube image load keycloak-service:1.0
+kubectl create deployment bankapp-keycloak-deployment --image=keycloak-service:1.0 -n bankapp
+
+
+docker run -d --name jenkins -p 8080:8080 -p 50000:50000 --restart=on-failure -v jenkins_home:/var/jenkins_home jenkins/jenkins:lts-jdk17

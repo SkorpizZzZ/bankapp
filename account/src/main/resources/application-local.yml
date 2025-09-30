@@ -1,0 +1,18 @@
+spring:
+  config:
+    import: optional:configserver:http://localhost:1012
+  profiles:
+    active: default
+  cloud:
+    config:
+      label: main
+app:
+  feign:
+    account-service:
+      url: http://localhost:1011/account
+    cash-service:
+      url: http://localhost:1017/cash
+    exchange-service:
+      url: http://localhost:1016/exchange
+    transfer-service:
+      url: http://localhost:1013/transfer

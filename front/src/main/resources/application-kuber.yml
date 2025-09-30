@@ -1,0 +1,55 @@
+server:
+  port: ${SERVER_PORT:1010}
+spring:
+  cloud:
+    discovery:
+      enabled: false
+    config:
+      enabled: false
+  security:
+    oauth2:
+      client:
+        provider:
+          keycloak:
+            issuer-uri: ${SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI:http://localhost:8888/realms/bankapp}
+        registration:
+          bankapp:
+            provider: keycloak
+            authorization-grant-type: client_credentials
+            client-id: bankapp
+            client-secret: Xih8xBTW8WuoJvBRFzuhQ8DXbxdONfec
+            scope:
+              - profile
+            client-authentication-method: client_secret_post
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+    liquibase:
+      access: read_only
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+app:
+  feign:
+    account-service:
+      url: ${APP_FEIGN_ACCOUNT_SERVICE_URL:http://localhost:1011/account}
+    cash-service:
+      url: ${APP_FEIGN_CASH_SERVICE_URL:http://localhost:1017/cash}
+    exchange-service:
+      url: ${APP_FEIGN_EXCHANGE_SERVICE_URL:http://localhost:1016/exchange}
+    transfer-service:
+      url: ${APP_FEIGN_TRANSFER_SERVICE_URL:http://localhost:1013/transfer}
+
+eureka:
+  client:
+    enabled: false
+
+logging:
+  level:
+    org.springframework.web: DEBUG
+    org.springframework.boot.actuate: INFO
+    org.example: DEBUG

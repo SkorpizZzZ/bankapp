@@ -1,0 +1,15 @@
+dependencies:
+- name: front-service
+  repository: file://charts/front-service
+  version: 0.1.0
+- name: account-service
+  repository: file://charts/account-service
+  version: 0.1.0
+- name: keycloak-service
+  repository: file://charts/keycloak-service
+  version: 0.1.0
+- name: postgresql
+  repository: https://charts.bitnami.com/bitnami
+  version: 14.2.3
+digest: sha256:269303c4bb123b47e44c1ea35ead8f23e79660f11e855f3174f7bcc40f1933a6
+generated: "2025-09-28T23:27:29.401149+05:00"

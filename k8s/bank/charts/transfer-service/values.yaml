@@ -1,0 +1,78 @@
+replicaCount: 1
+
+image:
+  repository: transfer-service
+  pullPolicy: IfNotPresent
+  tag: "1.0"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+profiles: "kuber"
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations: {}
+  hosts:
+    - host: transfer.test.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources: {}
+
+liveness:
+  delay: 120
+  timeout: 10
+  path: /actuator/health/liveness
+
+readiness:
+  delay: 60
+  timeout: 10
+  path: /actuator/health/readiness
+
+autoscaling:
+  hpa:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPU: 80
+    targetMemory: ""
+
+volumes: []
+
+volumeMounts: []
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+metrics:
+  enabled: false
+  serviceMonitor:
+    path: 
+    jobLabel: ""
+    interval: 15s
+    scrapeTimeout: ""

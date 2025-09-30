@@ -1,0 +1,8 @@
+spring:
+  config:
+    import: optional:configserver:http://localhost:1012
+  profiles:
+    active: default
+  cloud:
+    config:
+      label: main

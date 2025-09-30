@@ -6,9 +6,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(value = "gateway", contextId = "account")
+@FeignClient(value = "account", url = "${app.feign.account-service.url}")
 public interface AccountFeign {
 
-    @PostMapping("/account/users/transfer/{login}")
+    @PostMapping("/users/transfer/{login}")
     TransferExchangeDto transfer(@PathVariable("login") String login, @RequestBody TransferExchangeDto transferDto);
 }

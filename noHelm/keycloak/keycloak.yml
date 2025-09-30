@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: keycloak
+  labels:
+    app: keycloak
+spec:
+  containers:
+    - name: keycloak
+      image: keycloak-service:1.0
+      ports:
+        - containerPort: 8888
+
+--- # Разделитель YAML-файлов внутри одного физического файла
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak
+spec:
+  clusterIP: None # Означает, что Kubernetes назначит произвольный адрес.
+  selector:
+    app: keycloak
+  ports:
+    - port: 8888
+      targetPort: 8888

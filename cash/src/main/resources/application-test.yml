@@ -2,6 +2,9 @@ server:
   port: 0
 
 spring:
+  cloud:
+    config:
+      enabled: false
   liquibase:
     change-log: classpath:/db/changelog/rootChangeLog.xml
     liquibase-schema: public
@@ -13,7 +16,23 @@ spring:
       client:
         provider:
           keycloak:
-            issuer-uri: http://localhost:8888/realms/master
-eureka:
+            issuer-uri: http://localhost:8888/realms/bankapp
+        registration:
+          bankapp:
+            provider: keycloak
+            authorization-grant-type: client_credentials
+            client-id: bankapp
+            client-secret: Xih8xBTW8WuoJvBRFzuhQ8DXbxdONfec
+            scope:
+              - profile
+            client-authentication-method: client_secret_post
+app:
+  feign:
+    account-service:
+      url: ${APP_FEIGN_ACCOUNT_SERVICE_URL:http://localhost:1011/account}
+    blocker-service:
+      url: ${APP_FEIGN_BLOCKER_SERVICE_URL:http://localhost:1020/blocker}
+    notification-service:
+      url: ${APP_FEIGN_NOTIFICATION_SERVICE_URL:http://localhost:1018/notification}
   client:
     register-with-eureka: false

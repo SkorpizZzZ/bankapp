@@ -6,10 +6,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.math.BigDecimal;
 
-@FeignClient(value = "gateway", contextId = "exchange")
+@FeignClient(value = "exchange", url = "${app.feign.exchange-service.url}")
 public interface ExchangeFeign {
 
-    @GetMapping("/exchange/{from}/{to}/{value}")
+    @GetMapping("/{from}/{to}/{value}")
     BigDecimal exchange(
             @PathVariable("from") String from,
             @PathVariable("to") String to,

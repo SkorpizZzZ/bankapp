@@ -7,12 +7,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(value = "gateway", contextId = "cash")
+@FeignClient(value = "cash", url = "${app.feign.cash-service.url}")
 public interface CashFeign {
 
-    @PutMapping("/cash/user/withdraw/{login}")
+    @PutMapping("/user/withdraw/{login}")
     ResponseEntity<Void> withdraw(@PathVariable("login") String login, @RequestBody CashDto cash);
 
-    @PutMapping("/cash/user/deposit/{login}")
+    @PutMapping("/user/deposit/{login}")
     ResponseEntity<Void> deposit(@PathVariable("login") String login, @RequestBody CashDto cash);
 }

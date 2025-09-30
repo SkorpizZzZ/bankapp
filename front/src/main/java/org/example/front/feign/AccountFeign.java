@@ -9,21 +9,21 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@FeignClient(value = "gateway", contextId = "account")
+@FeignClient(value = "account", url = "${app.feign.account-service.url}")
 public interface AccountFeign {
 
-    @PostMapping("/account/users")
+    @PostMapping("/users")
     CreateUserDto createUser(@RequestBody CreateUserDto user);
 
-    @GetMapping("/account/users/{username}")
+    @GetMapping("/users/{username}")
     UserDto findUserByLogin(@PathVariable("username") String username);
 
-    @PutMapping("/account/users/editPassword")
+    @PutMapping("/users/editPassword")
     UpdatePasswordDto updatePassword(@RequestBody UpdatePasswordDto user);
 
-    @PutMapping("/account/users/editUserAccounts")
+    @PutMapping("/users/editUserAccounts")
     EditUserAccountDto updateUserAccounts(@RequestBody EditUserAccountDto userDto);
 
-    @GetMapping("/account/users/data")
+    @GetMapping("/users/data")
     List<EditUserAccountDto> findAllUsersData();
 }

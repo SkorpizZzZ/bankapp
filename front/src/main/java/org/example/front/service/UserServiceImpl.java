@@ -43,7 +43,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
         try {
             return accountFeign.createUser(mapper.encodePassAndReturn(user, passwordEncoder));
         } catch (FeignException.ServiceUnavailable e) {
-            log.error("Аккаунт сервис не доступен");
+            log.warn("Аккаунт сервис не доступен. {}", e.getMessage());
             throw new FrontException("Аккаунт сервис не доступен", e.status());
         } catch (FeignException e) {
             log.error(e.contentUTF8());

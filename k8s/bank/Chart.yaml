@@ -1,0 +1,60 @@
+apiVersion: v2
+name: bank
+description: A Helm chart for Kubernetes
+
+type: application
+
+version: 0.1.0
+appVersion: "1.0.0"
+
+dependencies:
+  - name: front-service
+    version: 0.1.0
+    repository: "file://charts/front-service"
+    condition: front-service.enabled
+
+  - name: account-service
+    version: 0.1.0
+    repository: "file://charts/account-service"
+    condition: account-service.enabled
+
+  - name: blocker-service
+    version: 0.1.0
+    repository: "file://charts/blocker-service"
+    condition: blocker-service.enabled
+
+  - name: cash-service
+    version: 0.1.0
+    repository: "file://charts/cash-service"
+    condition: cash-service.enabled
+
+  - name: exchange-service
+    version: 0.1.0
+    repository: "file://charts/exchange-service"
+    condition: exchange-service.enabled
+
+  - name: exchange-generator-service
+    version: 0.1.0
+    repository: "file://charts/exchange-generator-service"
+    condition: exchange-generator-service.enabled
+
+  - name: notification-service
+    version: 0.1.0
+    repository: "file://charts/notification-service"
+    condition: notification-service.enabled
+
+  - name: transfer-service
+    version: 0.1.0
+    repository: "file://charts/transfer-service"
+    condition: transfer-service.enabled
+
+  - name: keycloak-service
+    version: 0.1.0
+    repository: "file://charts/keycloak-service"
+    condition: keycloak-service.enabled
+
+  - name: postgresql
+    version: 14.2.3
+    repository: https://charts.bitnami.com/bitnami
+    alias: shared-db
+    condition: shared-db.enabled

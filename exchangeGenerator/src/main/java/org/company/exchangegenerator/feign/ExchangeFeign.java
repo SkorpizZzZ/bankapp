@@ -8,12 +8,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
-@FeignClient(value = "gateway", contextId = "exchange")
+@FeignClient(value = "exchange", url = "${app.feign.exchange-service.url}")
 public interface ExchangeFeign {
 
-    @GetMapping("/exchange")
+    @GetMapping
     List<CurrencyDto> findAll();
 
-    @PutMapping("/exchange/currencies")
+    @PutMapping("/currencies")
     void updateCurrencies(@RequestBody List<CurrencyDto> updatedCurrencies);
 }
