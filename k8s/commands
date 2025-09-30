@@ -53,3 +53,21 @@ kubectl create deployment bankapp-keycloak-deployment --image=keycloak-service:1
 
 
 docker run -d --name jenkins -p 8080:8080 -p 50000:50000 --restart=on-failure -v jenkins_home:/var/jenkins_home jenkins/jenkins:lts-jdk17
+docker exec -u root -it <jenkins-container-name> bash // docker exec -u root -it 7fe364ea566c bash
+apt-get update
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod 700 get_helm.sh
+./get_helm.sh
+apt-get install -y docker.io
+docker stop 7fe364ea566c
+docker rm 7fe364ea566c
+docker run -d \
+  --name jenkins \
+  -p 8080:8080 -p 50000:50000 \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v ~/.kube:/var/jenkins_home/.kube \
+  -v ~/.minikube:/var/jenkins_home/.minikube \
+  -v jenkins_data:/var/jenkins_home \
+  jenkins/jenkins:lts-jdk17
+
+
