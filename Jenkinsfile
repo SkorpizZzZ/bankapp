@@ -86,7 +86,7 @@ pipeline {
             steps {
                 sh '''
                     helm dependency update ./k8s/bank
-                    helm upgrade --install bankapp ./k8s/bank
+                    helm upgrade --install bank-app ./k8s/bank
                 '''
             }
         }
