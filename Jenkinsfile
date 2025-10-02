@@ -6,6 +6,7 @@ pipeline {
     }
 
     environment {
+        PATH = "/usr/local/bin:${env.PATH}"
         DOCKER_VERSION = "0.1"
         KEYCLOAK_VERSION = "1.0"
     }
@@ -106,7 +107,9 @@ pipeline {
 }
 
 def buildService(serviceName, imageName, version) {
-    sh "./gradlew :${serviceName}:clean :${serviceName}:build"
+    dir(serviceName) {
+        sh '../gradlew clean build'
+    }
     sh "docker build -t ${imageName}:${version} ./${serviceName}"
     sh "minikube image load ${imageName}:${version}"
 }
