@@ -106,9 +106,7 @@ pipeline {
 }
 
 def buildService(serviceName, imageName, version) {
-    dir(serviceName) {
-        sh 'gradle clean build || ./gradlew clean build'
-    }
+    sh "./gradlew :${serviceName}:clean :${serviceName}:build"
     sh "docker build -t ${imageName}:${version} ./${serviceName}"
     sh "minikube image load ${imageName}:${version}"
 }

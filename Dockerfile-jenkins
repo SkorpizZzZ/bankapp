@@ -1,0 +1,27 @@
+FROM jenkins/jenkins:lts-jdk21
+
+USER root
+
+RUN apt-get update && \
+    apt-get install -y \
+    docker.io \
+    wget \
+    curl \
+    unzip \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN wget https://services.gradle.org/distributions/gradle-8.10.2-bin.zip -P /tmp && \
+    unzip -d /opt/gradle /tmp/gradle-8.10.2-bin.zip && \
+    ln -sf /opt/gradle/gradle-8.10.2/bin/gradle /usr/bin/gradle && \
+    rm /tmp/gradle-8.10.2-bin.zip
+
+RUN curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
+    install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+# Только добавляем пользователя в группу, права на docker.sock настраиваем при запуске
+RUN usermod -aG docker jenkins
+
+USER jenkins

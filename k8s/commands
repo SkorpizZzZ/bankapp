@@ -59,6 +59,9 @@ curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scrip
 chmod 700 get_helm.sh
 ./get_helm.sh
 apt-get install -y docker.io
+curl -L -o /tmp/gradle-8.10.2-bin.zip https://services.gradle.org/distributions/gradle-8.10.2-bin.zip
+unzip -d /opt/gradle /tmp/gradle-8.10.2-bin.zip
+ln -sf /opt/gradle/gradle-8.10.2/bin/gradle /usr/bin/gradle
 docker stop 7fe364ea566c
 docker rm 7fe364ea566c
 docker run -d \
