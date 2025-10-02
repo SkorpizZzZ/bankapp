@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AmplicodePersistenceUnitSettings">
+    <persistence-units>
+      <persistence-unit moduleName="bankapp.account.main" name="Default">
+        <packages>
+          <package value="org.company.account" />
+        </packages>
+      </persistence-unit>
+      <persistence-unit moduleName="bankapp.cash.main" name="Default">
+        <packages>
+          <package value="org.company.cash" />
+        </packages>
+      </persistence-unit>
+      <persistence-unit moduleName="bankapp.exchange.main" name="Default">
+        <packages>
+          <package value="org.company.exchange" />
+        </packages>
+      </persistence-unit>
+      <persistence-unit moduleName="bankapp.notification.main" name="Default">
+        <packages>
+          <package value="org.company.notification" />
+        </packages>
+      </persistence-unit>
+      <persistence-unit moduleName="bankapp.transfer.main" name="Default">
+        <packages>
+          <package value="org.company.transfer" />
+        </packages>
+      </persistence-unit>
+    </persistence-units>
+  </component>
+</project>

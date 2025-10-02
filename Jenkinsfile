@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        PATH = "/usr/local/bin:${env.PATH}"
+        PATH = "/opt/homebrew/bin:/usr/local/bin:${env.PATH}"
         DOCKER_VERSION = "0.1"
         KEYCLOAK_VERSION = "1.0"
     }
