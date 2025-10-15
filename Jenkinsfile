@@ -76,8 +76,8 @@ pipeline {
         stage('Build Keycloak') {
             steps {
                 sh """
-                    docker build -t keycloak:${env.KEYCLOAK_VERSION} ./keycloak
-                    minikube image load keycloak:${env.KEYCLOAK_VERSION}
+                    docker build -t keycloak-service:${env.KEYCLOAK_VERSION} ./keycloak
+                    minikube image load keycloak-service:${env.KEYCLOAK_VERSION}
                 """
             }
         }
