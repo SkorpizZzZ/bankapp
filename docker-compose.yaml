@@ -143,7 +143,10 @@ services:
         DOCKER_BUILDKIT: 1
     restart: on-failure
     environment:
+      SPRING_PROFILES_ACTIVE: local
       SPRING_CONFIG_IMPORT: configserver:http://configServer:1012
+      APP_FEIGN_EXCHANGE_SERVICE_URL: http://bankapp.exchange:1016
+      APP_FEIGN_NOTIFICATION_SERVICE_URL: http://bankapp.notification:1018
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres?currentSchema=account
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
@@ -185,6 +188,7 @@ services:
         DOCKER_BUILDKIT: 1
     restart: on-failure
     environment:
+      SPRING_PROFILES_ACTIVE: local
       SPRING_CONFIG_IMPORT: configserver:http://configServer:1012
       SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://keycloak:8888/realms/bankapp
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8888/realms/bankapp
@@ -219,7 +223,11 @@ services:
         DOCKER_BUILDKIT: 1
     restart: on-failure
     environment:
+      SPRING_PROFILES_ACTIVE: local
       SPRING_CONFIG_IMPORT: configserver:http://configServer:1012
+      APP_FEIGN_ACCOUNT_SERVICE_URL: http://bankapp.account:1011
+      APP_FEIGN_BLOCKER_SERVICE_URL: http://bankapp.blocker:1020
+      APP_FEIGN_NOTIFICATION_SERVICE_URL: http://bankapp.notification:1018
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres?currentSchema=account
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
@@ -261,6 +269,7 @@ services:
         DOCKER_BUILDKIT: 1
     restart: on-failure
     environment:
+      SPRING_PROFILES_ACTIVE: local
       SPRING_CONFIG_IMPORT: configserver:http://configServer:1012
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres?currentSchema=account
       SPRING_DATASOURCE_USERNAME: postgres
@@ -303,7 +312,9 @@ services:
         DOCKER_BUILDKIT: 1
     restart: on-failure
     environment:
+      SPRING_PROFILES_ACTIVE: local
       SPRING_CONFIG_IMPORT: configserver:http://configServer:1012
+      APP_FEIGN_EXCHANGE_SERVICE_URL: http://bankapp.exchange:1016
       SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://keycloak:8888/realms/bankapp
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8888/realms/bankapp
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaServer:8761/eureka/
@@ -337,7 +348,12 @@ services:
         DOCKER_BUILDKIT: 1
     restart: on-failure
     environment:
+      SPRING_PROFILES_ACTIVE: local
       SPRING_CONFIG_IMPORT: configserver:http://configServer:1012
+      APP_FEIGN_ACCOUNT_SERVICE_URL: http://bankapp.account:1011
+      APP_FEIGN_CASH_SERVICE_URL: http://bankapp.cash:1017
+      APP_FEIGN_EXCHANGE_SERVICE_URL: http://bankapp.exchange:1016
+      APP_FEIGN_TRANSFER_SERVICE_URL: http://bankapp.transfer:1013
       SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://keycloak:8888/realms/bankapp
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8888/realms/bankapp
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaServer:8761/eureka/
@@ -371,6 +387,7 @@ services:
         DOCKER_BUILDKIT: 1
     restart: on-failure
     environment:
+      SPRING_PROFILES_ACTIVE: local
       SPRING_CONFIG_IMPORT: configserver:http://configServer:1012
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres?currentSchema=account
       SPRING_DATASOURCE_USERNAME: postgres
@@ -413,7 +430,12 @@ services:
         DOCKER_BUILDKIT: 1
     restart: on-failure
     environment:
+      SPRING_PROFILES_ACTIVE: local
       SPRING_CONFIG_IMPORT: configserver:http://configServer:1012
+      APP_FEIGN_ACCOUNT_SERVICE_URL: http://bankapp.account:1011
+      APP_FEIGN_BLOCKER_SERVICE_URL: http://bankapp.blocker:1020
+      APP_FEIGN_EXCHANGE_SERVICE_URL: http://bankapp.exchange:1016
+      APP_FEIGN_NOTIFICATION_SERVICE_URL: http://bankapp.notification:1018
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres?currentSchema=account
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres

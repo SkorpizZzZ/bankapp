@@ -1,18 +1,16 @@
 spring:
   config:
     import: optional:configserver:http://localhost:1012
-  profiles:
-    active: default
   cloud:
     config:
       label: main
 app:
   feign:
     account-service:
-      url: http://localhost:1011/account
+      url: ${APP_FEIGN_ACCOUNT_SERVICE_URL:http://localhost:1011/}
     cash-service:
-      url: http://localhost:1017/cash
+      url: ${APP_FEIGN_CASH_SERVICE_URL:http://localhost:1017/}
     exchange-service:
-      url: http://localhost:1016/exchange
+      url: ${APP_FEIGN_EXCHANGE_SERVICE_URL:http://localhost:1016/}
     transfer-service:
-      url: http://localhost:1013/transfer
+      url: ${APP_FEIGN_TRANSFER_SERVICE_URL:http://localhost:1013/}
