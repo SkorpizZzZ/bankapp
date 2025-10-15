@@ -82,6 +82,15 @@ pipeline {
             }
         }
 
+        stage('Prepare Database') {
+            steps {
+                sh """
+                    docker pull docker.io/bitnamilegacy/postgresql:16.2.0-debian-12-r5
+                    minikube image load docker.io/bitnamilegacy/postgresql:16.2.0-debian-12-r5
+                """
+            }
+        }
+
         stage('Deploy to Kubernetes') {
             steps {
                 sh '''
