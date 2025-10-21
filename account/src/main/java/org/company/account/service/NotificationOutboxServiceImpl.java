@@ -1,10 +1,10 @@
 package org.company.account.service;
 
-import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.company.account.domain.NotificationOutbox;
-import org.company.account.feign.NotificationFeign;
+import org.company.account.exception.AccountException;
+import org.company.account.kafka.publish.NotificationPublisher;
 import org.company.account.mapper.NotificationMapper;
 import org.company.account.repository.NotificationOutboxRepository;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -21,7 +22,7 @@ public class NotificationOutboxServiceImpl implements NotificationOutboxService 
 
     private final NotificationOutboxRepository notificationOutboxRepository;
 
-    private final NotificationFeign notificationFeign;
+    private final NotificationPublisher notificationPublisher;
 
     private final NotificationMapper notificationMapper;
 
@@ -47,21 +48,21 @@ public class NotificationOutboxServiceImpl implements NotificationOutboxService 
         List<NotificationOutbox> notifications = notificationOutboxRepository.findAllByReceivedFalse();
         log.debug("Список не отправленных уведомлений {}", notifications);
         sendNotificationsChangeReceivedStatus(notifications);
-        notificationOutboxRepository.saveAll(notifications);
     }
 
     private void sendNotificationsChangeReceivedStatus(List<NotificationOutbox> notifications) {
+        List<NotificationOutbox> successfullySent = new ArrayList<>(notifications.size());
         for (NotificationOutbox notification : notifications) {
             try {
-                notificationFeign.create(notificationMapper.notificationOutboxToNotificationDto(notification));
+                notificationPublisher.publish(notificationMapper.notificationOutboxToNotificationDto(notification));
                 notification.setReceived(true);
                 notification.setReceivedTime(LocalDateTime.now());
+                successfullySent.add(notification);
                 log.info("Уведомление отправлено {}", notification);
-            } catch (FeignException.ServiceUnavailable e) {
-                log.warn("Сервис уведомлений не доступен");
-            } catch (FeignException e) {
-                log.warn(e.contentUTF8());
+            } catch (AccountException e) {
+                log.warn("Ошибка отправки уведомления в Kafka: {}", notification);
             }
         }
+        notificationOutboxRepository.saveAll(successfullySent);
     }
 }

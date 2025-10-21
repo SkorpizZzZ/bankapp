@@ -45,6 +45,14 @@ spring:
             scope:
               - profile
             client-authentication-method: client_secret_post
+  kafka:
+    bootstrap-servers: ${BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    properties:
+      spring.json.add.type.headers: false
+
 app:
   feign:
     exchange-service:
