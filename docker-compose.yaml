@@ -150,6 +150,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres?currentSchema=account
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
+      BOOTSTRAP_SERVERS: kafka:29092
       SPRING_LIQUIBASE_URL: jdbc:postgresql://postgres:5432/postgres?currentSchema=account
       SPRING_LIQUIBASE_USER: postgres
       SPRING_LIQUIBASE_PASSWORD: postgres
@@ -172,6 +173,8 @@ services:
       bankapp.config-server:
         condition: service_healthy
       bankapp.eureka-server:
+        condition: service_healthy
+      kafka:
         condition: service_healthy
     labels:
       amplicode.image: springboot
@@ -231,6 +234,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres?currentSchema=account
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
+      BOOTSTRAP_SERVERS: kafka:29092
       SPRING_LIQUIBASE_URL: jdbc:postgresql://postgres:5432/postgres?currentSchema=account
       SPRING_LIQUIBASE_USER: postgres
       SPRING_LIQUIBASE_PASSWORD: postgres
@@ -254,6 +258,8 @@ services:
         condition: service_healthy
       bankapp.eureka-server:
         condition: service_healthy
+      kafka:
+        condition: service_healthy
     labels:
       amplicode.image: springboot
     networks:
@@ -274,6 +280,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres?currentSchema=account
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
+      BOOTSTRAP_SERVERS: kafka:29092
       SPRING_LIQUIBASE_URL: jdbc:postgresql://postgres:5432/postgres?currentSchema=account
       SPRING_LIQUIBASE_USER: postgres
       SPRING_LIQUIBASE_PASSWORD: postgres
@@ -297,6 +304,8 @@ services:
         condition: service_healthy
       bankapp.eureka-server:
         condition: service_healthy
+      kafka:
+        condition: service_healthy
     labels:
       amplicode.image: springboot
     networks:
@@ -318,6 +327,7 @@ services:
       SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://keycloak:8888/realms/bankapp
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8888/realms/bankapp
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaServer:8761/eureka/
+      BOOTSTRAP_SERVERS: kafka:29092
     ports:
       - "1019:1019"
     healthcheck:
@@ -332,6 +342,8 @@ services:
       bankapp.config-server:
         condition: service_healthy
       bankapp.eureka-server:
+        condition: service_healthy
+      kafka:
         condition: service_healthy
     labels:
       amplicode.image: springboot
@@ -392,6 +404,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres?currentSchema=account
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
+      BOOTSTRAP_SERVERS: kafka:29092
       SPRING_LIQUIBASE_URL: jdbc:postgresql://postgres:5432/postgres?currentSchema=account
       SPRING_LIQUIBASE_USER: postgres
       SPRING_LIQUIBASE_PASSWORD: postgres
@@ -414,6 +427,8 @@ services:
       bankapp.config-server:
         condition: service_healthy
       bankapp.eureka-server:
+        condition: service_healthy
+      kafka:
         condition: service_healthy
     labels:
       amplicode.image: springboot
@@ -439,6 +454,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres?currentSchema=account
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
+      BOOTSTRAP_SERVERS: kafka:29092
       SPRING_LIQUIBASE_URL: jdbc:postgresql://postgres:5432/postgres?currentSchema=account
       SPRING_LIQUIBASE_USER: postgres
       SPRING_LIQUIBASE_PASSWORD: postgres
@@ -462,12 +478,63 @@ services:
         condition: service_healthy
       bankapp.eureka-server:
         condition: service_healthy
+      kafka:
+        condition: service_healthy
     labels:
       amplicode.image: springboot
     networks:
       - bankapp-network
 
+  kafka:
+    image: confluentinc/cp-kafka:8.1.0
+    restart: on-failure
+    ports:
+      - "29092:29092"
+      - "9092:9092"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_NODE_ID: 1
+      CLUSTER_ID: AQDZ37zAQem8mJliaLICVg
+      KAFKA_PROCESS_ROLES: controller,broker
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://0.0.0.0:9092,CONTROLLER://kafka:9093
+    healthcheck:
+      test: kafka-topics --bootstrap-server localhost:9092 --list
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+    labels:
+      amplicode.image: confluent/kafka
+    networks:
+      - bankapp-network
+
+  kafkaui:
+    image: provectuslabs/kafka-ui:v0.6.2
+    restart: "no"
+    ports:
+      - "8989:8080"
+    environment:
+      DYNAMIC_CONFIG_ENABLED: "true"
+      KAFKA_CLUSTERS_0_NAME: vf3CZ9HQRxKk6mBIeLvPpw
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit -1
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    networks:
+      - bankapp-network
+
 volumes:
   postgres_data:
+  kafka_data:
 networks:
   bankapp-network:
