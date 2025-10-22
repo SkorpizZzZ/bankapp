@@ -4,5 +4,6 @@ metadata:
   name: exchange-generator-service-cm
 data:
   SERVER_PORT: "8080"
+  BOOTSTRAP_SERVERS: "bank-app-app-kafka-controller-0.bank-app-app-kafka-controller-headless:9092"
   APP_FEIGN_EXCHANGE_SERVICE_URL: "http://bank-app-exchange-service.default.svc.cluster.local:8080"
   SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: "http://bank-app-keycloak-service:8888/realms/bankapp"

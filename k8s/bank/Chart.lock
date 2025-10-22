@@ -5,11 +5,35 @@ dependencies:
 - name: account-service
   repository: file://charts/account-service
   version: 0.1.0
+- name: blocker-service
+  repository: file://charts/blocker-service
+  version: 0.1.0
+- name: cash-service
+  repository: file://charts/cash-service
+  version: 0.1.0
+- name: exchange-service
+  repository: file://charts/exchange-service
+  version: 0.1.0
+- name: exchange-generator-service
+  repository: file://charts/exchange-generator-service
+  version: 0.1.0
+- name: notification-service
+  repository: file://charts/notification-service
+  version: 0.1.0
+- name: transfer-service
+  repository: file://charts/transfer-service
+  version: 0.1.0
 - name: keycloak-service
   repository: file://charts/keycloak-service
   version: 0.1.0
 - name: postgresql
   repository: https://charts.bitnami.com/bitnami
   version: 14.2.3
-digest: sha256:269303c4bb123b47e44c1ea35ead8f23e79660f11e855f3174f7bcc40f1933a6
-generated: "2025-09-28T23:27:29.401149+05:00"
+- name: kafka
+  repository: https://charts.bitnami.com/bitnami
+  version: 32.4.3
+- name: zookeeper
+  repository: https://charts.bitnami.com/bitnami
+  version: 13.8.7
+digest: sha256:d0a2e4ca59770dd951dc3ac13f514780683851743ad0fd3726b3ae7b9dd8933d
+generated: "2025-10-22T01:28:22.490959+05:00"

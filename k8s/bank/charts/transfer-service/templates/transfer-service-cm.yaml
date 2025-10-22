@@ -4,6 +4,7 @@ metadata:
   name: transfer-service-cm
 data:
   SERVER_PORT: "8080"
+  BOOTSTRAP_SERVERS: "bank-app-app-kafka-controller-0.bank-app-app-kafka-controller-headless:9092"
   APP_FEIGN_ACCOUNT_SERVICE_URL: "http://bank-app-account-service.default.svc.cluster.local:8080"
   APP_FEIGN_BLOCKER_SERVICE_URL: "http://bank-app-blocker-service.default.svc.cluster.local:8080"
   APP_FEIGN_EXCHANGE_SERVICE_URL: "http://bank-app-exchange-service.default.svc.cluster.local:8080"

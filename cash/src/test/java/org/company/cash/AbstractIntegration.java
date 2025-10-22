@@ -19,7 +19,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @Testcontainers
-@ImportTestcontainers({PostgresTestContainer.class})
+@ImportTestcontainers({PostgresTestContainer.class, KafkaTestContainer.class})
 @SpringBootTest
 @ActiveProfiles("test")
 public class AbstractIntegration {

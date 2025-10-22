@@ -7,11 +7,18 @@ pipeline {
 
     environment {
         PATH = "/opt/homebrew/bin:/usr/local/bin:${env.PATH}"
-        DOCKER_VERSION = "0.1"
+        DOCKER_VERSION = "1.0"
         KEYCLOAK_VERSION = "1.0"
     }
 
     stages {
+
+        stage('Checkout SCM') {
+                    steps {
+                        checkout scm
+                    }
+                }
+
         stage('Build All Services') {
             parallel {
                 stage('Account Service') {
@@ -78,6 +85,33 @@ pipeline {
                 sh """
                     docker build -t keycloak-service:${env.KEYCLOAK_VERSION} ./keycloak
                     minikube image load keycloak-service:${env.KEYCLOAK_VERSION}
+                """
+            }
+        }
+
+        stage('Prepare Database') {
+            steps {
+                sh """
+                    docker pull docker.io/bitnamilegacy/postgresql:16.2.0-debian-12-r5
+                    minikube image load docker.io/bitnamilegacy/postgresql:16.2.0-debian-12-r5
+                """
+            }
+        }
+
+        stage('Prepare Zookeeper') {
+            steps {
+                sh """
+                    docker pull docker.io/bitnamilegacy/zookeeper:3.9.3-debian-12-r22
+                    minikube image load docker.io/bitnamilegacy/zookeeper:3.9.3-debian-12-r22
+                """
+            }
+        }
+
+        stage('Prepare Kafka') {
+            steps {
+                sh """
+                    docker pull docker.io/bitnamilegacy/kafka:3.3.2
+                    minikube image load docker.io/bitnamilegacy/kafka:3.3.2
                 """
             }
         }

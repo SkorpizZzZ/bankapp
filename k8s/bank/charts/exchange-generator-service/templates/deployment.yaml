@@ -34,6 +34,10 @@ spec:
         - name: wait-for-keycloak
           image: curlimages/curl
           command: ['sh', '-c', 'until curl -f http://bank-app-keycloak-service:8888/realms/bankapp; do echo "Waiting for Keycloak..."; sleep 5; done']
+
+        - name: wait-for-kafka
+          image: confluentinc/cp-kafka:7.4.0
+          command: ['sh', '-c', 'until kafka-topics --bootstrap-server bank-app-app-kafka-controller-0.bank-app-app-kafka-controller-headless:9092 --list; do echo "Waiting for Kafka..."; sleep 2; done']
       containers:
         - name: {{ .Chart.Name }}
           securityContext:

@@ -1,18 +1,16 @@
 spring:
   config:
     import: optional:configserver:http://localhost:1012
-  profiles:
-    active: default
   cloud:
     config:
       label: main
 app:
   feign:
     account-service:
-      url: ${APP_FEIGN_ACCOUNT_SERVICE_URL:http://localhost:1011/account}
+      url: ${APP_FEIGN_ACCOUNT_SERVICE_URL:http://localhost:1011/}
     blocker-service:
-      url: ${APP_FEIGN_BLOCKER_SERVICE_URL:http://localhost:1020/blocker}
+      url: ${APP_FEIGN_BLOCKER_SERVICE_URL:http://localhost:1020/}
     exchange-service:
-      url: ${APP_FEIGN_EXCHANGE_SERVICE_URL:http://localhost:1016/exchange}
+      url: ${APP_FEIGN_EXCHANGE_SERVICE_URL:http://localhost:1016/}
     notification-service:
-      url: ${APP_FEIGN_NOTIFICATION_SERVICE_URL:http://localhost:1018/notification}
+      url: ${APP_FEIGN_NOTIFICATION_SERVICE_URL:http://localhost:1018/}

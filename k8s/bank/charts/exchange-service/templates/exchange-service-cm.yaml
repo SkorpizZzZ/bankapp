@@ -4,4 +4,5 @@ metadata:
   name: exchange-service-cm
 data:
   SERVER_PORT: "8080"
+  BOOTSTRAP_SERVERS: "bank-app-app-kafka-controller-0.bank-app-app-kafka-controller-headless:9092"
   SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: "http://bank-app-keycloak-service:8888/realms/bankapp"

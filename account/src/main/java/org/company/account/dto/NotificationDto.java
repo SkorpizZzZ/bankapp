@@ -1,5 +1,7 @@
 package org.company.account.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.time.LocalDateTime;
 
 public record NotificationDto(
@@ -7,6 +9,7 @@ public record NotificationDto(
         String serviceName,
         String login,
         String message,
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
         LocalDateTime messageTime
 ) {
 }
