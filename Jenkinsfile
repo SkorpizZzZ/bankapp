@@ -12,6 +12,13 @@ pipeline {
     }
 
     stages {
+
+        stage('Checkout SCM') {
+                    steps {
+                        checkout scm
+                    }
+                }
+
         stage('Build All Services') {
             parallel {
                 stage('Account Service') {
@@ -87,6 +94,24 @@ pipeline {
                 sh """
                     docker pull docker.io/bitnamilegacy/postgresql:16.2.0-debian-12-r5
                     minikube image load docker.io/bitnamilegacy/postgresql:16.2.0-debian-12-r5
+                """
+            }
+        }
+
+        stage('Prepare Zookeeper') {
+            steps {
+                sh """
+                    docker pull docker.io/bitnamilegacy/zookeeper:3.9.3-debian-12-r22
+                    minikube image load docker.io/bitnamilegacy/zookeeper:3.9.3-debian-12-r22
+                """
+            }
+        }
+
+        stage('Prepare Kafka') {
+            steps {
+                sh """
+                    docker pull docker.io/bitnamilegacy/kafka:3.3.2
+                    minikube image load docker.io/bitnamilegacy/kafka:3.3.2
                 """
             }
         }
