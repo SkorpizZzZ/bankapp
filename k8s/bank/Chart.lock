@@ -29,5 +29,11 @@ dependencies:
 - name: postgresql
   repository: https://charts.bitnami.com/bitnami
   version: 14.2.3
-digest: sha256:597e189c06e3ac49977dac05c9af98736ee91f127eeb4a1daf5d70355447619f
-generated: "2025-10-16T01:14:53.790476+05:00"
+- name: kafka
+  repository: https://charts.bitnami.com/bitnami
+  version: 32.4.3
+- name: zookeeper
+  repository: https://charts.bitnami.com/bitnami
+  version: 13.8.7
+digest: sha256:d0a2e4ca59770dd951dc3ac13f514780683851743ad0fd3726b3ae7b9dd8933d
+generated: "2025-10-22T01:28:22.490959+05:00"

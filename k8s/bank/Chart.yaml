@@ -58,3 +58,15 @@ dependencies:
     repository: https://charts.bitnami.com/bitnami
     alias: shared-db
     condition: shared-db.enabled
+
+  - name: kafka
+    version: 32.4.3
+    repository: https://charts.bitnami.com/bitnami
+    alias: app-kafka
+    condition: app-kafka.enabled
+
+  - name: zookeeper
+    version: 13.8.7
+    repository: https://charts.bitnami.com/bitnami
+    alias: app-zookeeper
+    condition: app-kafka.enabled

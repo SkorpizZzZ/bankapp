@@ -43,6 +43,9 @@ spec:
                 secretKeyRef:
                   name: bank-app-shared-db
                   key: password
+        - name: wait-for-kafka
+          image: confluentinc/cp-kafka:7.4.0
+          command: ['sh', '-c', 'until kafka-topics --bootstrap-server bank-app-app-kafka-controller-0.bank-app-app-kafka-controller-headless:9092 --list; do echo "Waiting for Kafka..."; sleep 2; done']
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
