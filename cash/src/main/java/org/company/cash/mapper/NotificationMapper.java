@@ -1,7 +1,7 @@
 package org.company.cash.mapper;
 
 import org.company.cash.domain.NotificationOutbox;
-import org.company.cash.dto.NotificationDto;
+import org.company.notificationpublisher.dto.NotificationDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

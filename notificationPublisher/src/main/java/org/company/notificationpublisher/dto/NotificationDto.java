@@ -1,4 +1,4 @@
-package org.company.cash.dto;
+package org.company.notificationpublisher.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 

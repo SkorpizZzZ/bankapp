@@ -2,9 +2,9 @@ package org.company.transfer.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.company.notificationpublisher.exception.NotificationPublisherException;
+import org.company.notificationpublisher.publisher.NotificationPublisher;
 import org.company.transfer.domain.NotificationOutbox;
-import org.company.transfer.exception.TransferException;
-import org.company.transfer.kafka.publisher.NotificationPublisher;
 import org.company.transfer.mapper.NotificationMapper;
 import org.company.transfer.repository.NotificationOutboxRepository;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -59,7 +59,7 @@ public class NotificationOutboxServiceImpl implements NotificationOutboxService 
                 notification.setReceivedTime(LocalDateTime.now());
                 successfullySent.add(notification);
                 log.info("Уведомление отправлено {}", notification);
-            } catch (TransferException e) {
+            } catch (NotificationPublisherException e) {
                 log.warn("Ошибка отправки уведомления в Kafka: {}", notification);
             }
         }
