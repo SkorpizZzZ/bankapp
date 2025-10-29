@@ -12,6 +12,11 @@ dependencies {
     implementation 'org.liquibase:liquibase-core'
     implementation project(':notificationPublisher')
     runtimeOnly 'org.postgresql:postgresql'
+    
+    implementation 'net.ttddyy.observation:datasource-micrometer-spring-boot:1.0.5'
+    implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+    implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
+
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.boot:spring-boot-testcontainers'

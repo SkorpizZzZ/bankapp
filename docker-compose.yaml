@@ -157,6 +157,7 @@ services:
       SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://keycloak:8888/realms/bankapp
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8888/realms/bankapp
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaServer:8761/eureka/
+      TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
     ports:
       - "1011:1011"
     healthcheck:
@@ -196,6 +197,7 @@ services:
       SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://keycloak:8888/realms/bankapp
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8888/realms/bankapp
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaServer:8761/eureka/
+      TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
     ports:
       - "1020:1020"
     healthcheck:
@@ -241,6 +243,7 @@ services:
       SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://keycloak:8888/realms/bankapp
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8888/realms/bankapp
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaServer:8761/eureka/
+      TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
     ports:
       - "1017:1017"
     healthcheck:
@@ -287,6 +290,7 @@ services:
       SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://keycloak:8888/realms/bankapp
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8888/realms/bankapp
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaServer:8761/eureka/
+      TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
     ports:
       - "1016:1016"
     healthcheck:
@@ -328,6 +332,7 @@ services:
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8888/realms/bankapp
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaServer:8761/eureka/
       BOOTSTRAP_SERVERS: kafka:29092
+      TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
     ports:
       - "1019:1019"
     healthcheck:
@@ -369,6 +374,7 @@ services:
       SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://keycloak:8888/realms/bankapp
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8888/realms/bankapp
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaServer:8761/eureka/
+      TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
     ports:
       - "1010:1010"
     healthcheck:
@@ -411,6 +417,7 @@ services:
       SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://keycloak:8888/realms/bankapp
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8888/realms/bankapp
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaServer:8761/eureka/
+      TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
     ports:
       - "1018:1018"
     healthcheck:
@@ -461,6 +468,7 @@ services:
       SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://keycloak:8888/realms/bankapp
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8888/realms/bankapp
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaServer:8761/eureka/
+      TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
     ports:
       - "1013:1013"
     healthcheck:
@@ -529,6 +537,23 @@ services:
       interval: 10s
       timeout: 5s
       start_period: 60s
+      retries: 5
+    networks:
+      - bankapp-network
+
+  zipkin:
+    image: openzipkin/zipkin:3.4
+    container_name: zipkin
+    restart: "no"
+    ports:
+      - "9411:9411"
+    environment:
+      STORAGE_TYPE: mem
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:9411/health || exit 1
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
       retries: 5
     networks:
       - bankapp-network

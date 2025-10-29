@@ -76,7 +76,7 @@ services:
 
   kafkaui:
     image: provectuslabs/kafka-ui:v0.7.0
-    restart: "no"
+    restart: on-failure
     ports:
       - "8989:8080"
     environment:
@@ -89,6 +89,25 @@ services:
       timeout: 5s
       start_period: 60s
       retries: 5
+    networks:
+      - bankapp-network
+
+  zipkin:
+    image: openzipkin/zipkin:3.4
+    container_name: zipkin
+    restart: "no"
+    ports:
+      - "9411:9411"
+    environment:
+      STORAGE_TYPE: mem
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:9411/health || exit 1
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+    networks:
+      - bankapp-network
 
 volumes:
   postgres_data:

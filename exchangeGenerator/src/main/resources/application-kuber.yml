@@ -34,6 +34,7 @@ spring:
       spring.json.trusted.packages: "*"
       spring.json.use.type.headers: false
       spring.json.value.default.type: org.company.exchangegenerator.dto.CurrencyDto
+      spring.kafka.observation.enabled: true
 management:
   endpoint:
     health:
@@ -46,6 +47,16 @@ management:
     web:
       exposure:
         include: "*"
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: ${TRACING_ENDPOINT:http://localhost:9411/api/v2/spans}
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
 app:
   feign:
     exchange-service:
@@ -60,3 +71,5 @@ logging:
     org.springframework.web: DEBUG
     org.springframework.boot.actuate: INFO
     org.example: DEBUG
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"

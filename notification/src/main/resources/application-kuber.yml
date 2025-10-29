@@ -6,6 +6,9 @@ spring:
     username: ${DB_USERNAME:yandex}
     password: ${DB_PASSWORD:yandex}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      data-source-properties:
+        observability.enabled: true
   jpa:
     show-sql: true
     hibernate:
@@ -55,6 +58,7 @@ spring:
       spring.json.trusted.packages: "*"
       spring.json.use.type.headers: false
       spring.json.value.default.type: org.company.notification.dto.NotificationDto
+      spring.kafka.observation.enabled: true
 
 management:
   endpoint:
@@ -68,13 +72,25 @@ management:
     web:
       exposure:
         include: "*"
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: ${TRACING_ENDPOINT:http://localhost:9411/api/v2/spans}
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
 logging:
   level:
     org.springframework.boot.actuate: INFO
     org.springframework.jdbc.core.JdbcTemplate: DEBUG
     org.springframework.web: DEBUG
-    org.company.account: DEBUG
+    org.company.notification: DEBUG
     liquibase: INFO
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
 
 eureka:
   client:

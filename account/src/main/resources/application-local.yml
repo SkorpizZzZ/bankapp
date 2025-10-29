@@ -4,6 +4,7 @@ spring:
   cloud:
     config:
       label: main
+
 app:
   feign:
     exchange-service:

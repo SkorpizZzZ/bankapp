@@ -6,6 +6,9 @@ spring:
     username: ${DB_USERNAME:yandex}
     password: ${DB_PASSWORD:yandex}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      data-source-properties:
+        observability.enabled: true
   jpa:
     show-sql: true
     hibernate:
@@ -52,6 +55,8 @@ spring:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     properties:
       spring.json.add.type.headers: false
+      spring.kafka.observation.enabled: true
+
 
 app:
   feign:
@@ -60,6 +65,16 @@ app:
     notification-service:
       url: ${APP_FEIGN_NOTIFICATION_SERVICE_URL:http://localhost:1018/notification}
 management:
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: ${TRACING_ENDPOINT:http://localhost:9411/api/v2/spans}
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
   endpoint:
     health:
       probes:
@@ -78,6 +93,8 @@ logging:
     org.springframework.web: DEBUG
     org.company.account: DEBUG
     liquibase: INFO
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
 
 eureka:
   client:
