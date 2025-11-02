@@ -28,6 +28,7 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers("/actuator/health/**").permitAll()
+                        .requestMatchers("/actuator/prometheus").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(customizer -> customizer

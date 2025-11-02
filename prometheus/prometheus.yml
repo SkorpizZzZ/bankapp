@@ -1,0 +1,23 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'bank-app'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets:
+          - 'host.docker.internal:1011'  # account
+          - 'host.docker.internal:1013'  # transfer
+          - 'host.docker.internal:1014'  # cash
+          - 'host.docker.internal:1016'  # exchange
+          - 'host.docker.internal:1018'  # notification
+          - 'host.docker.internal:1020'  # blocker
+          - 'host.docker.internal:1017'  # exchangeGenerator
+          - 'host.docker.internal:1010'  # gateway
+          - 'host.docker.internal:1001'  # eurekaServer
+          - 'host.docker.internal:1012'  # configServer

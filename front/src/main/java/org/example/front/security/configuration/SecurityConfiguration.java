@@ -45,6 +45,7 @@ public class SecurityConfiguration {
                 .csrf(CsrfConfigurer::disable)
                 .authorizeHttpRequests(customizer -> customizer
                         .requestMatchers("/signup", "/login", "/actuator/health/**").permitAll()
+                        .requestMatchers("/actuator/prometheus").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
