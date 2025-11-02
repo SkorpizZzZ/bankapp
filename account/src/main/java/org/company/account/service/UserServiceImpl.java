@@ -13,6 +13,7 @@ import org.company.account.exception.UserNotFoundException;
 import org.company.account.feign.ExchangeFeign;
 import org.company.account.mapper.AccountMapper;
 import org.company.account.mapper.UserMapper;
+import org.company.account.metrics.MetricsService;
 import org.company.account.repository.AccountRepository;
 import org.company.account.repository.UserRepository;
 import org.springframework.http.HttpStatus;
@@ -39,6 +40,7 @@ public class UserServiceImpl implements UserService {
     private final AccountMapper accountMapper;
 
     private final NotificationOutboxService notificationOutboxService;
+    private final MetricsService metricsService;
 
 
     @Override
@@ -87,18 +89,24 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public UserDto findUserByLogin(String login) {
         log.info("Процесс поиска пользователя по логину {}", login);
-        User user = userRepository.findUserByLogin(login)
-                .orElseThrow(() -> new UserNotFoundException(format("Пользователь с логином %s не найден", login)));
-        List<CurrencyDto> currencies = new ArrayList<>();
         try {
-            currencies = exchangeFeign.findAll();
-        } catch (FeignException.ServiceUnavailable e) {
-            log.warn("Сервис валют не доступен");
-        } catch (FeignException e) {
-            log.warn(e.contentUTF8());
+            User user = userRepository.findUserByLogin(login)
+                    .orElseThrow(() -> new UserNotFoundException(format("Пользователь с логином %s не найден", login)));
+            List<CurrencyDto> currencies = new ArrayList<>();
+            try {
+                currencies = exchangeFeign.findAll();
+            } catch (FeignException.ServiceUnavailable e) {
+                log.warn("Сервис валют не доступен");
+            } catch (FeignException e) {
+                log.warn(e.contentUTF8());
+            }
+            log.debug("Найдены все доступные валюты {}", currencies);
+            metricsService.incrementLoginSuccess(login);
+            return userMapper.entityToUserDto(user, accountMapper.toAccountDtoList(user.getAccounts(), currencies));
+        } catch (UserNotFoundException e) {
+            metricsService.incrementLoginFailure(login);
+            throw e;
         }
-        log.debug("Найдены все доступные валюты {}", currencies);
-        return userMapper.entityToUserDto(user, accountMapper.toAccountDtoList(user.getAccounts(), currencies));
     }
 
     @Override

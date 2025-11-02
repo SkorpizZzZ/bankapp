@@ -9,6 +9,7 @@ import org.company.exchangegenerator.dto.CurrencyDto;
 import org.company.exchangegenerator.dto.CurrencyListDto;
 import org.company.exchangegenerator.exception.ExchangeGeneratorException;
 import org.company.exchangegenerator.kafka.publisher.RatePublisher;
+import org.company.exchangegenerator.metrics.MetricsService;
 import org.springframework.http.HttpStatus;
 import org.springframework.kafka.requestreply.ReplyingKafkaTemplate;
 import org.springframework.kafka.requestreply.RequestReplyFuture;
@@ -31,12 +32,18 @@ public class ExchangeGeneratorServiceImpl implements ExchangeGeneratorService {
 
     private final ReplyingKafkaTemplate<String, String, CurrencyListDto> replyingKafkaTemplate;
     private final RatePublisher ratePublisher;
+    private final MetricsService metricsService;
 
     @Override
     @Scheduled(fixedDelay = 60000)
     public void sendNewRates() {
-        List<CurrencyDto> currencies = findCurrencies().currencies();
-        sendUpdatedRates(currencies);
+        try {
+            List<CurrencyDto> currencies = findCurrencies().currencies();
+            sendUpdatedRates(currencies);
+        } catch (Exception e) {
+            log.error("Ошибка при обновлении курсов валют", e);
+            metricsService.incrementExchangeRateUpdateFailure();
+        }
     }
 
     private void sendUpdatedRates(List<CurrencyDto> currencies) {
@@ -81,12 +88,15 @@ public class ExchangeGeneratorServiceImpl implements ExchangeGeneratorService {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             log.error("Запрос прерван", e);
+            metricsService.incrementExchangeRateUpdateFailure();
             throw new ExchangeGeneratorException("Запрос прерван", HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (ExecutionException e) {
             log.error("Ошибка выполнения запроса", e);
+            metricsService.incrementExchangeRateUpdateFailure();
             throw new ExchangeGeneratorException("Ошибка сервиса валют", HttpStatus.SERVICE_UNAVAILABLE);
         } catch (TimeoutException e) {
             log.error("Таймаут ожидания ответа", e);
+            metricsService.incrementExchangeRateUpdateFailure();
             throw new ExchangeGeneratorException("Сервис валют не отвечает", HttpStatus.REQUEST_TIMEOUT);
         }
     }

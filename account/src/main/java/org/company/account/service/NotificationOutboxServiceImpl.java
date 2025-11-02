@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.company.account.domain.NotificationOutbox;
 import org.company.account.exception.AccountException;
 import org.company.account.mapper.NotificationMapper;
+import org.company.account.metrics.MetricsService;
 import org.company.account.repository.NotificationOutboxRepository;
 import org.company.notificationpublisher.publisher.NotificationPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -25,6 +26,7 @@ public class NotificationOutboxServiceImpl implements NotificationOutboxService 
     private final NotificationPublisher notificationPublisher;
 
     private final NotificationMapper notificationMapper;
+    private final MetricsService metricsService;
 
     @Override
     @Transactional
@@ -61,6 +63,7 @@ public class NotificationOutboxServiceImpl implements NotificationOutboxService 
                 log.info("Уведомление отправлено {}", notification);
             } catch (AccountException e) {
                 log.warn("Ошибка отправки уведомления в Kafka: {}", notification);
+                metricsService.incrementNotificationPublishFailure(notification.getLogin());
             }
         }
         notificationOutboxRepository.saveAll(successfullySent);

@@ -10,6 +10,7 @@ import org.company.transfer.feign.AccountFeign;
 import org.company.transfer.feign.BlockerFeign;
 import org.company.transfer.feign.ExchangeFeign;
 import org.company.transfer.mapper.TransferMapper;
+import org.company.transfer.metrics.MetricsService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +28,7 @@ public class TransferServiceImpl implements TransferService {
     private final BlockerFeign blockerFeign;
 
     private final NotificationOutboxService notificationOutboxService;
+    private final MetricsService metricsService;
 
     private final TransferMapper transferMapper;
 
@@ -34,6 +36,7 @@ public class TransferServiceImpl implements TransferService {
     public TransferExchangeDto transfer(String login, TransferDto transferDto) {
         if (isSuspicious()) {
             log.warn("Подозрительная операция перевода");
+            metricsService.incrementSuspiciousOperation(login, transferDto.toLogin(), transferDto.fromCurrency(), transferDto.toCurrency());
             notificationOutboxService.createMessage(login, "Подозрительная операция перевода");
             throw new TransferException("Подозрительная операция перевода", HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
@@ -51,9 +54,11 @@ public class TransferServiceImpl implements TransferService {
             return transfer;
         } catch (FeignException.ServiceUnavailable e) {
             log.warn("Аккаунт сервис не доступен");
+            metricsService.incrementTransferFailure(login, transferExchangeDto.toLogin(), transferExchangeDto.fromCurrency(), transferExchangeDto.toCurrency());
             throw new TransferException("Аккаунт сервис не доступен", HttpStatus.INTERNAL_SERVER_ERROR.value());
         } catch (FeignException e) {
             log.error(e.contentUTF8());
+            metricsService.incrementTransferFailure(login, transferExchangeDto.toLogin(), transferExchangeDto.fromCurrency(), transferExchangeDto.toCurrency());
             throw new TransferException(e.contentUTF8(), e.status());
         }
     }

@@ -6,6 +6,7 @@ import org.company.notificationpublisher.exception.NotificationPublisherExceptio
 import org.company.notificationpublisher.publisher.NotificationPublisher;
 import org.company.transfer.domain.NotificationOutbox;
 import org.company.transfer.mapper.NotificationMapper;
+import org.company.transfer.metrics.MetricsService;
 import org.company.transfer.repository.NotificationOutboxRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ public class NotificationOutboxServiceImpl implements NotificationOutboxService 
     private final NotificationPublisher notificationPublisher;
 
     private final NotificationMapper notificationMapper;
+    private final MetricsService metricsService;
 
     @Override
     @Transactional
@@ -61,6 +63,7 @@ public class NotificationOutboxServiceImpl implements NotificationOutboxService 
                 log.info("Уведомление отправлено {}", notification);
             } catch (NotificationPublisherException e) {
                 log.warn("Ошибка отправки уведомления в Kafka: {}", notification);
+                metricsService.incrementNotificationPublishFailure(notification.getLogin());
             }
         }
         notificationOutboxRepository.saveAll(successfullySent);

@@ -1,0 +1,18 @@
+# Grafana data directory
+data/
+
+# Grafana logs
+*.log
+
+# Grafana database
+grafana.db
+
+# Grafana sessions
+sessions/
+
+# Grafana plugins (if downloaded)
+plugins/
+
+# OS files
+.DS_Store
+Thumbs.db
