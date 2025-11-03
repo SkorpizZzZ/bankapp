@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Properties>
+        <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [${spring:spring.application.name},%X{traceId:-},%X{spanId:-}] [%t] %c{1.} : %m%n</Property>
+    </Properties>
+
+    <Appenders>
+        <!-- Console Appender -->
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </Console>
+
+        <!-- Kafka Appender -->
+        <Kafka name="Kafka" topic="application-logs">
+            <JsonLayout compact="true" eventEol="true" properties="true">
+                <KeyValuePair key="service" value="${spring:spring.application.name}"/>
+            </JsonLayout>
+            <Property name="bootstrap.servers">${env:BOOTSTRAP_SERVERS:-localhost:9092}</Property>
+            <Property name="key.serializer">org.apache.kafka.common.serialization.StringSerializer</Property>
+            <Property name="value.serializer">org.apache.kafka.common.serialization.ByteArraySerializer</Property>
+            <Property name="max.block.ms">2000</Property>
+        </Kafka>
+    </Appenders>
+
+    <Loggers>
+        <Logger name="org.company" level="debug" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="Kafka"/>
+        </Logger>
+
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="Kafka"/>
+        </Root>
+    </Loggers>
+</Configuration>

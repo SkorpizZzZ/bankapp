@@ -73,6 +73,8 @@ services:
       retries: 5
     labels:
       amplicode.image: confluent/kafka
+    networks:
+      - bankapp-network
 
   kafkaui:
     image: provectuslabs/kafka-ui:v0.7.0
@@ -157,6 +159,24 @@ services:
       retries: 5
     depends_on:
       - prometheus
+    networks:
+      - bankapp-network
+
+  logstash:
+    image: logstash:8.11.0
+    container_name: logstash
+    restart: "no"
+    ports:
+      - "5044:5044"
+      - "9600:9600"
+    volumes:
+      - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+    environment:
+      LS_JAVA_OPTS: "-Xmx512m -Xms512m"
+      BOOTSTRAP_SERVERS: "kafka:29092"
+    depends_on:
+      kafka:
+        condition: service_healthy
     networks:
       - bankapp-network
 
