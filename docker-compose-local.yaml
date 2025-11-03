@@ -162,6 +162,29 @@ services:
     networks:
       - bankapp-network
 
+  elasticsearch:
+    image: elasticsearch:8.11.0
+    container_name: elasticsearch
+    restart: "no"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    environment:
+      discovery.type: single-node
+      ES_JAVA_OPTS: "-Xmx512m -Xms512m"
+      xpack.security.enabled: "false"
+      xpack.security.enrollment.enabled: "false"
+    healthcheck:
+      test: curl -s http://localhost:9200/_cluster/health | grep -q '"status":"green"\|"status":"yellow"'
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 10
+    networks:
+      - bankapp-network
+
   logstash:
     image: logstash:8.11.0
     container_name: logstash
@@ -174,8 +197,32 @@ services:
     environment:
       LS_JAVA_OPTS: "-Xmx512m -Xms512m"
       BOOTSTRAP_SERVERS: "kafka:29092"
+      ELASTICSEARCH_HOSTS: "http://elasticsearch:9200"
     depends_on:
       kafka:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - bankapp-network
+
+  kibana:
+    image: kibana:8.11.0
+    container_name: kibana
+    restart: "no"
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_HOSTS: "http://elasticsearch:9200"
+      ELASTICSEARCH_URL: "http://elasticsearch:9200"
+    healthcheck:
+      test: curl -s http://localhost:5601/api/status | grep -q '"level":"available"'
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 10
+    depends_on:
+      elasticsearch:
         condition: service_healthy
     networks:
       - bankapp-network
@@ -185,5 +232,6 @@ volumes:
   kafka_data:
   prometheus_data:
   grafana_data:
+  elasticsearch_data:
 networks:
   bankapp-network:

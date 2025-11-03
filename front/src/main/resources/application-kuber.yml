@@ -39,6 +39,11 @@ management:
     tracing:
       endpoint: ${TRACING_ENDPOINT:http://localhost:9411/api/v2/spans}
   metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}
     distribution:
       percentiles-histogram:
         http.server.requests: true
