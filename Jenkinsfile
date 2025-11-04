@@ -9,6 +9,14 @@ pipeline {
         PATH = "/opt/homebrew/bin:/usr/local/bin:${env.PATH}"
         DOCKER_VERSION = "1.0"
         KEYCLOAK_VERSION = "1.0"
+        
+        // Observability Stack versions
+        ZIPKIN_VERSION = "3.4"
+        PROMETHEUS_VERSION = "v2.48.0"
+        GRAFANA_VERSION = "10.2.2"
+        ELASTICSEARCH_VERSION = "8.11.0"
+        KIBANA_VERSION = "8.11.0"
+        LOGSTASH_VERSION = "8.11.0"
     }
 
     stages {
@@ -116,12 +124,84 @@ pipeline {
             }
         }
 
+        stage('Prepare Observability Stack') {
+            parallel {
+                stage('Prepare Zipkin') {
+                    steps {
+                        sh """
+                            docker pull openzipkin/zipkin:${env.ZIPKIN_VERSION}
+                            minikube image load openzipkin/zipkin:${env.ZIPKIN_VERSION}
+                        """
+                    }
+                }
+                stage('Prepare Prometheus') {
+                    steps {
+                        sh """
+                            docker pull prom/prometheus:${env.PROMETHEUS_VERSION}
+                            minikube image load prom/prometheus:${env.PROMETHEUS_VERSION}
+                        """
+                    }
+                }
+                stage('Prepare Grafana') {
+                    steps {
+                        sh """
+                            docker pull grafana/grafana:${env.GRAFANA_VERSION}
+                            minikube image load grafana/grafana:${env.GRAFANA_VERSION}
+                        """
+                    }
+                }
+                stage('Prepare Elasticsearch') {
+                    steps {
+                        sh """
+                            docker pull elasticsearch:${env.ELASTICSEARCH_VERSION}
+                            minikube image load elasticsearch:${env.ELASTICSEARCH_VERSION}
+                        """
+                    }
+                }
+                stage('Prepare Kibana') {
+                    steps {
+                        sh """
+                            docker pull kibana:${env.KIBANA_VERSION}
+                            minikube image load kibana:${env.KIBANA_VERSION}
+                        """
+                    }
+                }
+                stage('Prepare Logstash') {
+                    steps {
+                        sh """
+                            docker pull logstash:${env.LOGSTASH_VERSION}
+                            minikube image load logstash:${env.LOGSTASH_VERSION}
+                        """
+                    }
+                }
+            }
+        }
+
         stage('Deploy to Kubernetes') {
             steps {
                 sh '''
                     helm dependency update ./k8s/bank
-                    helm upgrade --install bank-app ./k8s/bank
+                    helm upgrade --install bank-app ./k8s/bank --namespace bankapp --create-namespace --timeout 15m
                 '''
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                script {
+                    echo 'Waiting for pods to be ready...'
+                    sh '''
+                        kubectl wait --for=condition=ready pod -l app.kubernetes.io/instance=bank-app -n bankapp --timeout=300s || true
+                        echo "=== Deployment Status ==="
+                        kubectl get pods -n bankapp
+                        echo ""
+                        echo "=== Services ==="
+                        kubectl get svc -n bankapp
+                        echo ""
+                        echo "=== Observability Stack Status ==="
+                        kubectl get pods -n bankapp | grep -E "(zipkin|prometheus|grafana|elasticsearch|kibana|logstash)" || echo "Observability pods not found"
+                    '''
+                }
             }
         }
     }
@@ -132,10 +212,29 @@ pipeline {
             echo 'Build completed'
         }
         success {
+            echo '=========================================='
             echo 'Application deployed successfully!'
+            echo '=========================================='
+            echo ''
+            echo 'Observability Stack URLs:'
+            echo '  Grafana:        minikube service bank-app-grafana-service -n bankapp'
+            echo '  Prometheus:     minikube service bank-app-prometheus-service -n bankapp'
+            echo '  Zipkin:         minikube service bank-app-zipkin-service -n bankapp'
+            echo '  Kibana:         minikube service bank-app-kibana-service -n bankapp'
+            echo ''
+            echo 'Application Services:'
+            echo '  Front Service:  minikube service bank-app-front-service -n bankapp'
+            echo ''
+            echo 'Useful Commands:'
+            echo '  View pods:      kubectl get pods -n bankapp'
+            echo '  View services:  kubectl get svc -n bankapp'
+            echo '  View logs:      kubectl logs -f <pod-name> -n bankapp'
+            echo '=========================================='
         }
         failure {
             echo 'Build failed!'
+            sh 'kubectl get pods -n bankapp || true'
+            sh 'kubectl get events -n bankapp --sort-by=.lastTimestamp | tail -20 || true'
         }
     }
 }
