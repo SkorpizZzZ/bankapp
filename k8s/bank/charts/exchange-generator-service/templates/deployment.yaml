@@ -50,6 +50,10 @@ spec:
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: "{{ .Values.profiles }}"
+            - name: TRACING_ENDPOINT
+              value: "{{ .Values.global.observability.zipkin.endpoint }}"
+            - name: BOOTSTRAP_SERVERS
+              value: "{{ .Values.global.observability.kafka.bootstrapServers }}"
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}

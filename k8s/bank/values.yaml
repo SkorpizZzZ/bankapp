@@ -5,6 +5,11 @@ global:
     port: 5432
     name: "bankapp"
     username: "bankapp"
+  observability:
+    zipkin:
+      endpoint: "http://bank-app-zipkin-service:9411/api/v2/spans"
+    kafka:
+      bootstrapServers: "bank-app-app-kafka:9092"
 
 transfer-service:
   config:
@@ -96,3 +101,22 @@ app-zookeeper:
     repository: bitnamilegacy/zookeeper
     tag: 3.9.3-debian-12-r22
     pullPolicy: IfNotPresent
+
+# Observability Stack
+zipkin-service:
+  enabled: true
+
+prometheus-service:
+  enabled: true
+
+grafana-service:
+  enabled: true
+
+elasticsearch-service:
+  enabled: true
+
+kibana-service:
+  enabled: true
+
+logstash-service:
+  enabled: true

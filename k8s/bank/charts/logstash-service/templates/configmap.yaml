@@ -1,0 +1,100 @@
+{{- if .Values.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "logstash-service.fullname" . }}-config
+  labels:
+    {{- include "logstash-service.labels" . | nindent 4 }}
+data:
+  logstash.conf: |
+    input {
+      kafka {
+        bootstrap_servers => "${BOOTSTRAP_SERVERS}"
+        topics => ["{{ .Values.kafka.topic }}"]
+        codec => "json"
+        consumer_threads => 1
+        group_id => "logstash-consumer-group"
+        auto_offset_reset => "earliest"
+      }
+    }
+
+    filter {
+      # Parse JSON log message
+      json {
+        source => "message"
+        target => "log"
+      }
+
+      # Extract trace information from MDC
+      if [log][contextMap][traceId] {
+        mutate {
+          add_field => { "traceId" => "%{[log][contextMap][traceId]}" }
+        }
+      }
+
+      if [log][contextMap][spanId] {
+        mutate {
+          add_field => { "spanId" => "%{[log][contextMap][spanId]}" }
+        }
+      }
+
+      # Extract service name
+      if [log][service] {
+        mutate {
+          add_field => { "service" => "%{[log][service]}" }
+        }
+      }
+
+      # Extract log level
+      if [log][level] {
+        mutate {
+          add_field => { "level" => "%{[log][level]}" }
+        }
+      }
+
+      # Extract logger name
+      if [log][loggerName] {
+        mutate {
+          add_field => { "logger" => "%{[log][loggerName]}" }
+        }
+      }
+
+      # Extract thread name
+      if [log][thread] {
+        mutate {
+          add_field => { "thread" => "%{[log][thread]}" }
+        }
+      }
+
+      # Extract timestamp
+      if [log][instant][epochSecond] and [log][instant][nanoOfSecond] {
+        ruby {
+          code => "
+            epoch = event.get('[log][instant][epochSecond]').to_i
+            nano = event.get('[log][instant][nanoOfSecond]').to_i
+            millis = (nano / 1000000).to_i
+            event.set('[@timestamp]', Time.at(epoch, millis, :millisecond))
+          "
+        }
+      }
+
+      # Add Zipkin URL for trace correlation
+      if [traceId] and [traceId] != "-" {
+        mutate {
+          add_field => { "zipkin_url" => "http://bank-app-zipkin-service:9411/zipkin/traces/%{traceId}" }
+        }
+      }
+    }
+
+    output {
+      stdout {
+        codec => rubydebug
+      }
+
+      elasticsearch {
+        hosts => ["${ELASTICSEARCH_HOSTS}"]
+        index => "application-logs-%{+YYYY.MM.dd}"
+        document_type => "_doc"
+      }
+    }
+{{- end }}

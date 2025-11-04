@@ -16,8 +16,10 @@ serviceAccount:
   automount: true
   annotations: {}
   name: ""
-
-podAnnotations: {}
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8080"
+  prometheus.io/path: "/actuator/prometheus"
 podLabels: {}
 
 podSecurityContext: {}

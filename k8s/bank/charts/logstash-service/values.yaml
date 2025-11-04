@@ -1,0 +1,37 @@
+enabled: true
+
+replicaCount: 1
+
+image:
+  repository: logstash
+  tag: "8.11.0"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  ports:
+    beats: 5044
+    monitoring: 9600
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 500m
+    memory: 512Mi
+
+kafka:
+  bootstrapServers: "bank-app-app-kafka:9092"
+  topic: "application-logs"
+
+elasticsearch:
+  hosts: "http://bank-app-elasticsearch-service:9200"
+
+env:
+  - name: LS_JAVA_OPTS
+    value: "-Xmx512m -Xms512m"
+  - name: BOOTSTRAP_SERVERS
+    value: "bank-app-app-kafka:9092"
+  - name: ELASTICSEARCH_HOSTS
+    value: "http://bank-app-elasticsearch-service:9200"

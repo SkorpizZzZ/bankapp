@@ -35,5 +35,23 @@ dependencies:
 - name: zookeeper
   repository: https://charts.bitnami.com/bitnami
   version: 13.8.7
-digest: sha256:d0a2e4ca59770dd951dc3ac13f514780683851743ad0fd3726b3ae7b9dd8933d
-generated: "2025-10-22T01:28:22.490959+05:00"
+- name: zipkin-service
+  repository: file://charts/zipkin-service
+  version: 0.1.0
+- name: prometheus-service
+  repository: file://charts/prometheus-service
+  version: 0.1.0
+- name: grafana-service
+  repository: file://charts/grafana-service
+  version: 0.1.0
+- name: elasticsearch-service
+  repository: file://charts/elasticsearch-service
+  version: 0.1.0
+- name: kibana-service
+  repository: file://charts/kibana-service
+  version: 0.1.0
+- name: logstash-service
+  repository: file://charts/logstash-service
+  version: 0.1.0
+digest: sha256:53638b471d6463679e01ac4de57adffb08c00c83e674b90faa1829e5ca5a6ceb
+generated: "2025-11-04T16:01:16.667201+05:00"

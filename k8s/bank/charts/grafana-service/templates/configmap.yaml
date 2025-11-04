@@ -1,0 +1,20 @@
+{{- if .Values.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "grafana-service.fullname" . }}-datasources
+  labels:
+    {{- include "grafana-service.labels" . | nindent 4 }}
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+    {{- if .Values.datasources.prometheus.enabled }}
+    - name: Prometheus
+      type: prometheus
+      access: proxy
+      url: {{ .Values.datasources.prometheus.url }}
+      isDefault: true
+      editable: true
+    {{- end }}
+{{- end }}

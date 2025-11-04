@@ -70,3 +70,33 @@ dependencies:
     repository: https://charts.bitnami.com/bitnami
     alias: app-zookeeper
     condition: app-kafka.enabled
+
+  - name: zipkin-service
+    version: 0.1.0
+    repository: "file://charts/zipkin-service"
+    condition: zipkin-service.enabled
+
+  - name: prometheus-service
+    version: 0.1.0
+    repository: "file://charts/prometheus-service"
+    condition: prometheus-service.enabled
+
+  - name: grafana-service
+    version: 0.1.0
+    repository: "file://charts/grafana-service"
+    condition: grafana-service.enabled
+
+  - name: elasticsearch-service
+    version: 0.1.0
+    repository: "file://charts/elasticsearch-service"
+    condition: elasticsearch-service.enabled
+
+  - name: kibana-service
+    version: 0.1.0
+    repository: "file://charts/kibana-service"
+    condition: kibana-service.enabled
+
+  - name: logstash-service
+    version: 0.1.0
+    repository: "file://charts/logstash-service"
+    condition: logstash-service.enabled

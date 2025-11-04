@@ -1,0 +1,53 @@
+{{- if .Values.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "logstash-service.fullname" . }}
+  labels:
+    {{- include "logstash-service.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "logstash-service.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "logstash-service.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: logstash
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - name: beats
+          containerPort: 5044
+          protocol: TCP
+        - name: monitoring
+          containerPort: 9600
+          protocol: TCP
+        env:
+        {{- toYaml .Values.env | nindent 8 }}
+        volumeMounts:
+        - name: config
+          mountPath: /usr/share/logstash/pipeline
+          readOnly: true
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+        livenessProbe:
+          httpGet:
+            path: /
+            port: monitoring
+          initialDelaySeconds: 90
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: monitoring
+          initialDelaySeconds: 60
+          periodSeconds: 10
+      volumes:
+      - name: config
+        configMap:
+          name: {{ include "logstash-service.fullname" . }}-config
+{{- end }}

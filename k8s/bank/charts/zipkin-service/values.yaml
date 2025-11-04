@@ -1,0 +1,24 @@
+enabled: true
+
+replicaCount: 1
+
+image:
+  repository: openzipkin/zipkin
+  tag: "3.4"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 9411
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+env:
+  - name: STORAGE_TYPE
+    value: "mem"
